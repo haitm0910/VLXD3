@@ -1,3 +1,4 @@
+// File: CategoryDAO.java
 package com.example.vlxd3.dao;
 
 import android.content.ContentValues;
@@ -22,6 +23,7 @@ public class CategoryDAO {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put("name", category.getName());
+        values.put("image", category.getImage()); // <-- THÊM DÒNG NÀY
         long id = db.insert("categories", null, values);
         db.close();
         return id;
@@ -34,8 +36,9 @@ public class CategoryDAO {
         if (cursor != null && cursor.moveToFirst()) {
             do {
                 Category category = new Category(
-                    cursor.getInt(cursor.getColumnIndexOrThrow("id")),
-                    cursor.getString(cursor.getColumnIndexOrThrow("name"))
+                        cursor.getInt(cursor.getColumnIndexOrThrow("id")),
+                        cursor.getString(cursor.getColumnIndexOrThrow("name")),
+                        cursor.getString(cursor.getColumnIndexOrThrow("image")) // <-- THÊM DÒNG NÀY
                 );
                 list.add(category);
             } while (cursor.moveToNext());
