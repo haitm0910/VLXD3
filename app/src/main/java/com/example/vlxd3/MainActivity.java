@@ -5,6 +5,7 @@ package com.example.vlxd3;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.EditText; // Import EditText
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -19,10 +20,12 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.vlxd3.dao.CategoryDAO;
-import com.example.vlxd3.dao.FlashSaleDAO; // Import FlashSaleDAO
+import com.example.vlxd3.dao.FlashSaleDAO;
+import com.example.vlxd3.dao.ProductDAO; // Import ProductDAO
 import com.example.vlxd3.dao.UserDAO;
 import com.example.vlxd3.model.Category;
-import com.example.vlxd3.model.FlashSale; // Import FlashSale
+import com.example.vlxd3.model.FlashSale;
+import com.example.vlxd3.model.Product; // Import Product
 import com.example.vlxd3.model.User;
 
 import java.util.List;
@@ -34,8 +37,13 @@ public class MainActivity extends AppCompatActivity {
     private UserDAO userDAO;
     private RecyclerView recyclerViewCategories;
     private CategoryDAO categoryDAO;
-    private RecyclerView recyclerViewFlashSales; // Khai báo RecyclerView cho Flash Sale
-    private FlashSaleDAO flashSaleDAO; // Khai báo FlashSaleDAO
+    private RecyclerView recyclerViewFlashSales;
+    private FlashSaleDAO flashSaleDAO;
+
+    private EditText searchEditText; // Khai báo EditText tìm kiếm
+    private ImageView searchIcon; // Khai báo ImageView nút tìm kiếm
+    private ProductDAO productDAO; // Khai báo ProductDAO để tìm kiếm
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +73,25 @@ public class MainActivity extends AppCompatActivity {
             textViewTitle.setText("Xin chào, " + user.getFullName());
         }
 
+        // Ánh xạ EditText và ImageView tìm kiếm
+        searchEditText = findViewById(R.id.editTextSearch);
+        searchIcon = findViewById(R.id.searchIcon);
+        productDAO = new ProductDAO(this); // Khởi tạo ProductDAO
+
+        // Xử lý sự kiện click cho nút tìm kiếm
+        if (searchIcon != null) {
+            searchIcon.setOnClickListener(v -> performSearch());
+        }
+        // Có thể thêm OnEditorActionListener cho searchEditText để tìm kiếm khi nhấn Enter trên bàn phím
+        // searchEditText.setOnEditorActionListener((v, actionId, event) -> {
+        //     if (actionId == EditorInfo.IME_ACTION_SEARCH || actionId == EditorInfo.IME_ACTION_DONE || event.getAction() == KeyEvent.ACTION_DOWN && event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
+        //         performSearch();
+        //         return true;
+        //     }
+        //     return false;
+        // });
+
+
         TextView textViewSeeAllCriteria = findViewById(R.id.textViewSeeAllCriteria);
         if (textViewSeeAllCriteria != null) {
             textViewSeeAllCriteria.setOnClickListener(new View.OnClickListener() {
@@ -82,24 +109,18 @@ public class MainActivity extends AppCompatActivity {
         categoryDAO = new CategoryDAO(this);
 
         List<Category> allCategories = categoryDAO.getAllCategories();
-        List<Category> displayedCategories = allCategories; // Lấy tất cả hoặc giới hạn số lượng
+        List<Category> displayedCategories = allCategories;
 
         recyclerViewCategories.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         CategoryMainAdapter categoryMainAdapter = new CategoryMainAdapter(this, displayedCategories, userId);
         recyclerViewCategories.setAdapter(categoryMainAdapter);
 
-
         // Xử lý RecyclerView cho Sản phẩm Flash Sale
-        recyclerViewFlashSales = findViewById(R.id.recyclerViewProducts); // Ánh xạ RecyclerView cho Flash Sale
-        flashSaleDAO = new FlashSaleDAO(this); // Khởi tạo FlashSaleDAO
+        recyclerViewFlashSales = findViewById(R.id.recyclerViewProducts);
+        flashSaleDAO = new FlashSaleDAO(this);
 
-        // Lấy danh sách các sản phẩm flash sale (ví dụ: tất cả hoặc chỉ một vài sản phẩm đầu tiên)
         List<FlashSale> allFlashSales = flashSaleDAO.getAllFlashSales();
-        // Giả sử bạn muốn hiển thị một số sản phẩm flash sale nổi bật
-        // List<FlashSale> displayedFlashSales = allFlashSales.subList(0, Math.min(allFlashSales.size(), 5));
-        // Để đơn giản, hiển thị tất cả các flash sale
         List<FlashSale> displayedFlashSales = allFlashSales;
-
 
         recyclerViewFlashSales.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         FlashSaleMainAdapter flashSaleMainAdapter = new FlashSaleMainAdapter(this, displayedFlashSales, userId);
@@ -133,7 +154,6 @@ public class MainActivity extends AppCompatActivity {
                 intent.putExtra("userId", userId);
                 startActivity(intent);
             });
-            // Thêm sự kiện cho "Xem tất cả" Flash Sale nếu bạn có nút đó trong layout
             TextView textViewSeeAllProfitable = findViewById(R.id.textViewSeeAllProfitable);
             if (textViewSeeAllProfitable != null) {
                 textViewSeeAllProfitable.setOnClickListener(v -> {
@@ -142,6 +162,36 @@ public class MainActivity extends AppCompatActivity {
                     startActivity(intent);
                 });
             }
+        }
+    }
+
+    // PHƯƠNG THỨC XỬ LÝ TÌM KIẾM
+    private void performSearch() {
+        String query = searchEditText.getText().toString().trim();
+        if (query.isEmpty()) {
+            Toast.makeText(this, "Vui lòng nhập từ khóa tìm kiếm!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        List<Product> searchResults = productDAO.searchProductsByName(query);
+
+        if (searchResults.isEmpty()) {
+            Toast.makeText(this, "Không tìm thấy sản phẩm nào phù hợp!", Toast.LENGTH_LONG).show();
+        } else {
+            // TODO: Hiển thị kết quả tìm kiếm
+            // Cách 1: Hiển thị trong một Activity mới (ví dụ ActivitySearchResults)
+            Intent intent = new Intent(MainActivity.this, ActivityGachOpLat.class); // Tái sử dụng ActivityGachOpLat cho kết quả tìm kiếm
+            // Bạn cần điều chỉnh ActivityGachOpLat để nó có thể nhận List<Product> hoặc một query string
+            // và hiển thị các sản phẩm đó.
+            // Để đơn giản, tôi sẽ chuyển sang ActivityGachOpLat và gửi một query string
+            // Bạn sẽ cần sửa ActivityGachOpLat để nó đọc query string và gọi productDAO.searchProductsByName()
+
+            intent.putExtra("searchQuery", query); // Truyền chuỗi tìm kiếm
+            intent.putExtra("userId", userId); // Đảm bảo userId cũng được truyền
+            startActivity(intent);
+
+            // Cách 2: Hiển thị ngay trên MainActivity (phức tạp hơn, cần thay đổi RecyclerView hoặc thêm một ListView/RecyclerView mới)
+            // Hiện tại, chúng ta sẽ chuyển sang Activity mới để giữ MainActivity gọn gàng.
         }
     }
 }

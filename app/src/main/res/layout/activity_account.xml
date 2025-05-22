@@ -72,17 +72,17 @@
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginTop="8dp">
+                android:layout_marginTop="8dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
                 <ImageView
                     android:layout_width="16dp"
                     android:layout_height="16dp"
-                    android:src="@drawable/location"
                     android:layout_marginEnd="4dp"
-                    android:contentDescription="Location Pin" />
+                    android:contentDescription="Location Pin"
+                    android:src="@drawable/location" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -95,112 +95,124 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:background="#F0F0F0"
                 android:layout_marginTop="24dp"
-                android:layout_marginBottom="16dp" />
+                android:layout_marginBottom="16dp"
+                android:background="#F0F0F0" />
 
             <LinearLayout
                 android:id="@+id/option_thong_tin_ca_nhan"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
                 android:gravity="center_vertical"
+                android:orientation="horizontal"
                 android:paddingVertical="12dp">
 
                 <ImageView
                     android:layout_width="28dp"
                     android:layout_height="28dp"
-                    android:src="@drawable/account"
                     android:contentDescription="Icon"
-                    app:tint="#427EA6"/>
+                    android:src="@drawable/account"
+                    app:tint="#427EA6" />
 
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
                     android:layout_weight="1"
                     android:text="Thông tin cá nhân"
                     android:textColor="@android:color/black"
-                    android:textSize="16sp"
-                    android:layout_marginStart="16dp" />
+                    android:textSize="16sp" />
             </LinearLayout>
-            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#F0F0F0" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#F0F0F0" />
 
             <LinearLayout
                 android:id="@+id/option_don_hang_cua_toi_header"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
                 android:gravity="center_vertical"
+                android:orientation="horizontal"
                 android:paddingVertical="12dp">
 
                 <ImageView
                     android:layout_width="28dp"
                     android:layout_height="28dp"
-                    android:src="@drawable/pack"
                     android:contentDescription="Icon"
-                    app:tint="#427EA6"/>
+                    android:src="@drawable/pack"
+                    app:tint="#427EA6" />
 
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
                     android:layout_weight="1"
                     android:text="Đơn hàng của tôi"
                     android:textColor="@android:color/black"
-                    android:textSize="16sp"
-                    android:layout_marginStart="16dp" />
+                    android:textSize="16sp" />
 
             </LinearLayout>
-            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#F0F0F0" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#F0F0F0" />
+
             <LinearLayout
                 android:id="@+id/option_doi_mat_khau"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
                 android:gravity="center_vertical"
+                android:orientation="horizontal"
                 android:paddingVertical="12dp">
 
                 <ImageView
                     android:layout_width="28dp"
                     android:layout_height="28dp"
+                    android:contentDescription="Icon"
                     android:src="@drawable/img_2"
-                    app:tint="#427EA6"
-                    android:contentDescription="Icon" />
+                    app:tint="#427EA6" />
 
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
                     android:layout_weight="1"
                     android:text="Đổi mật khẩu"
                     android:textColor="@android:color/black"
-                    android:textSize="16sp"
-                    android:layout_marginStart="16dp" />
+                    android:textSize="16sp" />
             </LinearLayout>
 
-            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#F0F0F0" />
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#F0F0F0" />
 
             <LinearLayout
                 android:id="@+id/option_dang_xuat"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
                 android:gravity="center_vertical"
+                android:orientation="horizontal"
                 android:paddingVertical="12dp">
 
                 <ImageView
                     android:layout_width="28dp"
                     android:layout_height="28dp"
+                    android:contentDescription="Icon"
                     android:src="@drawable/img_4"
-                    app:tint="#427EA6"
-                    android:contentDescription="Icon" />
+                    app:tint="#427EA6" />
 
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
                     android:layout_weight="1"
                     android:text="Đăng xuất"
                     android:textColor="@android:color/black"
-                    android:textSize="16sp"
-                    android:layout_marginStart="16dp" />
+                    android:textSize="16sp" />
             </LinearLayout>
 
         </LinearLayout>

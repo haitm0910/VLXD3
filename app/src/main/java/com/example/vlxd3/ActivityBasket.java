@@ -60,7 +60,15 @@ public class ActivityBasket extends AppCompatActivity implements CartUpdateListe
             finish();
             return;
         }
-
+        ImageView backButton = findViewById(R.id.iv_back_arrow_basket); // Ánh xạ ImageView của nút back
+        if (backButton != null) { // Kiểm tra để tránh NullPointerException nếu nút không tìm thấy
+            backButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    finish(); // Phương thức này sẽ đóng Activity hiện tại và quay về Activity trước đó
+                }
+            });
+        }
         cartDAO = new CartDAO(this);
         productDAO = new ProductDAO(this);
         flashSaleDAO = new FlashSaleDAO(this);

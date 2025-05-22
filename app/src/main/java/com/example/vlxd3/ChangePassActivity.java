@@ -3,6 +3,7 @@ package com.example.vlxd3;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -34,6 +35,14 @@ public class ChangePassActivity extends AppCompatActivity {
         confirmNewPasswordEditText = findViewById(R.id.et_comfirm_password); // Lỗi chính tả: et_comfirm_password thay vì et_confirm_password
         savePasswordButton = findViewById(R.id.btn_save_password);
         backButtonChangePassword = findViewById(R.id.iv_back_arrow_change_password);
+
+        // Kiểm tra để tránh NullPointerException nếu nút không tìm thấy
+        backButtonChangePassword.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish(); // Phương thức này sẽ đóng Activity hiện tại và quay về Activity trước đó
+            }
+        });
 
         // Khởi tạo DAO
         userDAO = new UserDAO(this);

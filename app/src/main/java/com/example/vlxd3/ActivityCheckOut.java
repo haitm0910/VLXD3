@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
@@ -71,7 +72,15 @@ public class ActivityCheckOut extends AppCompatActivity {
         totalAmountTextView = findViewById(R.id.total_amount_text_view);
         confirmOrderButton = findViewById(R.id.confirm_order_button);
         orderSummaryRecyclerView = findViewById(R.id.order_summary_recycler_view);
-
+        ImageView backButton = findViewById(R.id.iv_back_arrow_checkout); // Ánh xạ ImageView của nút back
+        if (backButton != null) { // Kiểm tra để tránh NullPointerException nếu nút không tìm thấy
+            backButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    finish(); // Phương thức này sẽ đóng Activity hiện tại và quay về Activity trước đó
+                }
+            });
+        }
         // Khởi tạo DAOs
         userDAO = new UserDAO(this);
         cartDAO = new CartDAO(this);
