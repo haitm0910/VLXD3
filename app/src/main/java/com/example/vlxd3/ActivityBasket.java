@@ -10,7 +10,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ImageView;
-import android.widget.Button; // Thêm import Button
+import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -38,7 +38,7 @@ public class ActivityBasket extends AppCompatActivity implements CartUpdateListe
     private TextView itemCountTextView;
     private TextView emptyBasketMessage;
     private LinearLayout summaryCheckoutContainer;
-    private Button goToCheckoutButton; // <-- KHAI BÁO NÚT
+    private Button goToCheckoutButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,7 +50,7 @@ public class ActivityBasket extends AppCompatActivity implements CartUpdateListe
         itemCountTextView = findViewById(R.id.item_count_text);
         emptyBasketMessage = findViewById(R.id.empty_basket_message);
         summaryCheckoutContainer = findViewById(R.id.summary_checkout_container);
-        goToCheckoutButton = findViewById(R.id.go_to_checkout_button); // <-- ÁNH XẠ NÚT
+        goToCheckoutButton = findViewById(R.id.go_to_checkout_button);
 
         userId = getIntent().getIntExtra("userId", -1);
         if (userId == -1) {
@@ -70,30 +70,28 @@ public class ActivityBasket extends AppCompatActivity implements CartUpdateListe
 
         refreshCartData();
 
-        // Xử lý nút "Thanh toán giỏ hàng"
         goToCheckoutButton.setOnClickListener(v -> {
             if (cartItems.isEmpty()) {
                 Toast.makeText(this, "Giỏ hàng trống. Không thể thanh toán.", Toast.LENGTH_SHORT).show();
                 return;
             }
             Intent intent = new Intent(ActivityBasket.this, ActivityCheckOut.class);
-            intent.putExtra("userId", userId); // Truyền userId sang màn hình thanh toán
-            // Có thể truyền thêm tổng tiền hoặc danh sách sản phẩm nếu muốn ActivityCheckOut không cần truy vấn lại
+            intent.putExtra("userId", userId);
             startActivity(intent);
         });
 
-
-        // Xử lý bottom navigation
         LinearLayout bottomNav = findViewById(R.id.bottomNavigationView);
         if (bottomNav != null && bottomNav.getChildCount() >= 2) {
             LinearLayout homeLayout = (LinearLayout) bottomNav.getChildAt(0);
             LinearLayout basketLayout = (LinearLayout) bottomNav.getChildAt(1);
+            LinearLayout accountLayout = (LinearLayout) bottomNav.getChildAt(2);
 
             ImageView homeIcon = homeLayout.findViewById(R.id.home_icon_bottom_nav);
-            if (homeIcon != null) homeIcon.setImageResource(R.drawable.home);
-
+            if(homeIcon != null) homeIcon.setImageResource(R.drawable.home);
             ImageView basketIcon = basketLayout.findViewById(R.id.basket_icon_bottom_nav);
-            if (basketIcon != null) basketIcon.setImageResource(R.drawable.basket);
+            if(basketIcon != null) basketIcon.setImageResource(R.drawable.basket);
+            ImageView accountIcon = accountLayout.findViewById(R.id.account_icon_bottom_nav);
+            if(accountIcon != null) accountIcon.setImageResource(R.drawable.account);
 
             homeLayout.setOnClickListener(v -> {
                 Intent intent = new Intent(ActivityBasket.this, MainActivity.class);
@@ -103,6 +101,13 @@ public class ActivityBasket extends AppCompatActivity implements CartUpdateListe
             });
             basketLayout.setOnClickListener(v -> {
                 // Đã ở ActivityBasket, có thể refresh hoặc không làm gì
+            });
+            // SỬA SỰ KIỆN CLICK CHO NÚT "TÀI KHOẢN"
+            accountLayout.setOnClickListener(v -> {
+                Intent intent = new Intent(ActivityBasket.this, AccountActivity.class); // <-- Đã sửa ở đây
+                intent.putExtra("userId", userId);
+                startActivity(intent);
+                finish(); // Đóng Activity hiện tại nếu muốn
             });
         }
     }
@@ -125,7 +130,6 @@ public class ActivityBasket extends AppCompatActivity implements CartUpdateListe
             }
         }
 
-        // Cập nhật adapter với danh sách mới
         adapter = new BasketAdapter(this, cartItems, products, flashSaleDAO, this);
         basketListView.setAdapter(adapter);
 
