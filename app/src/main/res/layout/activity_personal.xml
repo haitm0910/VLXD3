@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F0F0F0"
+    android:background="#F8F8FF"
     android:id="@+id/main"
     tools:context=".PersonalActivity">
 
@@ -87,7 +87,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
                 app:hintEnabled="true"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                app:boxBackgroundColor="#FFFFFF">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/et_full_name"
@@ -103,9 +103,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                app:hintEnabled="true"
-
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                app:boxBackgroundColor="#FFFFFF"
+                app:hintEnabled="true">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/et_email"
@@ -121,9 +120,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                app:hintEnabled="true"
-
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                app:boxBackgroundColor="#FFFFFF"
+                app:hintEnabled="true">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/et_phone_number"
@@ -139,9 +137,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                app:hintEnabled="true"
-
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                app:boxBackgroundColor="#FFFFFF"
+                app:hintEnabled="true">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/et_address"
@@ -154,6 +151,7 @@
                     android:textSize="16sp"
                     tools:text="" />
             </com.google.android.material.textfield.TextInputLayout>
+
 
         </LinearLayout>
     </ScrollView>
