@@ -23,6 +23,7 @@ public class AccountActivity extends AppCompatActivity {
     private LinearLayout optionLogout;
     private LinearLayout optionPersonalInfo;
     private LinearLayout optionMyOrders;
+    private LinearLayout optionChangePassword; // <-- Khai báo LinearLayout cho Đổi mật khẩu
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +34,7 @@ public class AccountActivity extends AppCompatActivity {
         optionLogout = findViewById(R.id.option_dang_xuat);
         optionPersonalInfo = findViewById(R.id.option_thong_tin_ca_nhan);
         optionMyOrders = findViewById(R.id.option_don_hang_cua_toi_header);
+        optionChangePassword = findViewById(R.id.option_doi_mat_khau); // <-- Ánh xạ LinearLayout này
 
         userId = getIntent().getIntExtra("userId", -1);
 
@@ -68,11 +70,19 @@ public class AccountActivity extends AppCompatActivity {
                 });
             }
 
-            // SỬA SỰ KIỆN CLICK CHO TÙY CHỌN "ĐƠN HÀNG CỦA TÔI"
             if (optionMyOrders != null) {
                 optionMyOrders.setOnClickListener(v -> {
-                    Intent intent = new Intent(AccountActivity.this, OrderActivity.class); // <-- Đã sửa ở đây
+                    Intent intent = new Intent(AccountActivity.this, OrderActivity.class);
                     intent.putExtra("userId", userId);
+                    startActivity(intent);
+                });
+            }
+
+            // THÊM SỰ KIỆN CLICK CHO TÙY CHỌN "ĐỔI MẬT KHẨU"
+            if (optionChangePassword != null) {
+                optionChangePassword.setOnClickListener(v -> {
+                    Intent intent = new Intent(AccountActivity.this, ChangePassActivity.class); // <-- Chuyển đến ChangePassActivity
+                    intent.putExtra("userId", userId); // Truyền userId
                     startActivity(intent);
                 });
             }

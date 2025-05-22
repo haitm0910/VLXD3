@@ -11,7 +11,7 @@ import java.util.Locale;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String DATABASE_NAME = "vlxd3.db";
-    public static final int DATABASE_VERSION = 5; // <-- TĂNG DATABASE_VERSION
+    public static final int DATABASE_VERSION = 6; // <-- TĂNG DATABASE_VERSION
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);

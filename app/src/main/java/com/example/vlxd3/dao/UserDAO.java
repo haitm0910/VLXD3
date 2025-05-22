@@ -12,6 +12,7 @@ import com.example.vlxd3.database.DatabaseHelper;
 import com.example.vlxd3.model.User;
 
 public class UserDAO {
+    private static final String TAG = "UserDAO"; // Thêm TAG
     private DatabaseHelper dbHelper;
 
     public UserDAO(Context context) {
@@ -30,9 +31,10 @@ public class UserDAO {
             values.put("email", user.getEmail());
             values.put("address", user.getAddress());
             long id = db.insert("users", null, values);
+            Log.d(TAG, "Registered user: " + user.getUsername() + " with ID: " + id);
             return id;
         } catch (Exception e) {
-            Log.e("UserDAO", "Error registering user: " + e.getMessage());
+            Log.e(TAG, "Error registering user: " + e.getMessage(), e);
             return -1;
         } finally {
             if (db != null) db.close();
@@ -58,7 +60,7 @@ public class UserDAO {
                 );
             }
         } catch (Exception e) {
-            Log.e("UserDAO", "Error logging in: " + e.getMessage());
+            Log.e(TAG, "Error logging in: " + e.getMessage(), e);
         } finally {
             if (cursor != null) cursor.close();
             if (db != null) db.close();
@@ -85,13 +87,34 @@ public class UserDAO {
                 );
             }
         } catch (Exception e) {
-            Log.e("UserDAO", "Error getting user by ID: " + e.getMessage());
+            Log.e(TAG, "Error getting user by ID: " + e.getMessage(), e);
         } finally {
             if (cursor != null) cursor.close();
             if (db != null) db.close();
         }
         return user;
     }
+
+    // Phương thức để kiểm tra sự tồn tại của username
+    public boolean isUsernameExists(String username) {
+        SQLiteDatabase db = null;
+        Cursor cursor = null;
+        boolean exists = false;
+        try {
+            db = dbHelper.getReadableDatabase();
+            cursor = db.query("users", new String[]{"id"}, "username=?", new String[]{username}, null, null, null);
+            if (cursor != null && cursor.getCount() > 0) {
+                exists = true;
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error checking if username exists: " + e.getMessage(), e);
+        } finally {
+            if (cursor != null) cursor.close();
+            if (db != null) db.close();
+        }
+        return exists;
+    }
+
 
     public boolean updateUserInfo(User user) {
         SQLiteDatabase db = null;
@@ -104,9 +127,28 @@ public class UserDAO {
             values.put("address", user.getAddress());
 
             int rowsAffected = db.update("users", values, "id=?", new String[]{String.valueOf(user.getId())});
+            Log.d(TAG, "Updated user info for ID " + user.getId() + ". Rows affected: " + rowsAffected);
             return rowsAffected > 0;
         } catch (Exception e) {
-            Log.e("UserDAO", "Error updating user info: " + e.getMessage());
+            Log.e(TAG, "Error updating user info: " + e.getMessage(), e);
+            return false;
+        } finally {
+            if (db != null) db.close();
+        }
+    }
+
+    // THÊM PHƯƠNG THỨC NÀY ĐỂ ĐỔI MẬT KHẨU
+    public boolean updatePassword(String username, String newPassword) {
+        SQLiteDatabase db = null;
+        try {
+            db = dbHelper.getWritableDatabase();
+            ContentValues values = new ContentValues();
+            values.put("password", newPassword);
+            int rowsAffected = db.update("users", values, "username=?", new String[]{username});
+            Log.d(TAG, "Updated password for user " + username + ". Rows affected: " + rowsAffected);
+            return rowsAffected > 0;
+        } catch (Exception e) {
+            Log.e(TAG, "Error updating password: " + e.getMessage(), e);
             return false;
         } finally {
             if (db != null) db.close();

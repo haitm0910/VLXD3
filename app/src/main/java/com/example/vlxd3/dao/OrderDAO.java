@@ -15,35 +15,41 @@ import com.example.vlxd3.model.OrderDetail;
 import com.example.vlxd3.model.Product;
 import com.example.vlxd3.model.FlashSale;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 public class OrderDAO {
+    private static final String TAG = "OrderDAO";
     private DatabaseHelper dbHelper;
-    // DAO instances for internal use should not be re-initialized in every method.
-    // They should be initialized once in the constructor.
-    private ProductDAO productDAO;
-    private FlashSaleDAO flashSaleDAO;
+    private ProductDAO productDAO_internal;
+    private FlashSaleDAO flashSaleDAO_internal;
 
     public OrderDAO(Context context) {
         dbHelper = new DatabaseHelper(context);
-        // Initialize child DAOs once
-        productDAO = new ProductDAO(context);
-        flashSaleDAO = new FlashSaleDAO(context);
+        productDAO_internal = new ProductDAO(dbHelper); // Khởi tạo với dbHelper để chia sẻ kết nối
+        flashSaleDAO_internal = new FlashSaleDAO(dbHelper); // Khởi tạo với dbHelper để chia sẻ kết nối
+        Log.d(TAG, "OrderDAO initialized.");
     }
 
     public long createOrder(Order order, List<CartItem> cartItems) {
-        SQLiteDatabase db = null; // Khởi tạo db là null
+        SQLiteDatabase db = null;
         long orderId = -1;
 
-        try {
-            db = dbHelper.getWritableDatabase(); // Lấy kết nối ghi
-            db.beginTransaction(); // Bắt đầu transaction
+        Log.d(TAG, "Attempting to create a new order.");
+        Log.d(TAG, "Order details: UserID=" + order.getUserId() + ", TotalAmount=" + order.getTotalAmount());
+        Log.d(TAG, "Cart items count for this order: " + (cartItems != null ? cartItems.size() : "null list"));
 
-            // 1. Thêm đơn hàng vào bảng 'orders'
+        if (cartItems == null || cartItems.isEmpty()) {
+            Log.e(TAG, "Cart items list is null or empty. Cannot create order details.");
+            return -1;
+        }
+
+        try {
+            db = dbHelper.getWritableDatabase();
+            Log.d(TAG, "Database opened for writing. Starting transaction.");
+            db.beginTransaction();
+
+            // 1. Thêm đơn hàng tổng quát vào bảng 'orders'
             ContentValues orderValues = new ContentValues();
             orderValues.put("userId", order.getUserId());
             orderValues.put("orderDate", order.getOrderDate());
@@ -55,24 +61,28 @@ public class OrderDAO {
             orderValues.put("status", order.getStatus());
 
             orderId = db.insert("orders", null, orderValues);
-            Log.d("OrderDAO", "Order created with ID: " + orderId);
+            Log.d(TAG, "INSERT into 'orders' result (orderId): " + orderId);
 
             if (orderId != -1) {
-                // 2. Thêm chi tiết đơn hàng vào bảng 'order_details' và cập nhật tồn kho
+                Log.d(TAG, "Order header created successfully. Processing order details for Order ID: " + orderId);
+                Log.d(TAG, "Number of cart items to process: " + cartItems.size());
+
+                // 2. Thêm chi tiết từng sản phẩm vào bảng 'order_details' và cập nhật tồn kho
                 for (CartItem item : cartItems) {
-                    // Chú ý: ProductDAO và FlashSaleDAO được khởi tạo ở constructor của OrderDAO
-                    // Nên không cần gọi getReadableDatabase/getWritableDatabase lại ở đây cho chúng
-                    // vì chúng có context riêng và quản lý dbHelper của chúng.
-                    // Vấn đề khóa database thường xảy ra khi cùng một dbHelper được mở nhiều lần
-                    // mà không đóng.
-                    Product product = productDAO.getProductById(item.getProductId());
+                    Log.d(TAG, "Processing cart item productId: " + item.getProductId() + ", quantity: " + item.getQuantity());
+
+                    // SỬ DỤNG PHƯƠNG THỨC QUÁ TẢI, TRUYỀN DB HIỆN CÓ
+                    Product product = productDAO_internal.getProductById(item.getProductId(), db);
                     if (product != null) {
                         double unitPrice;
-                        FlashSale flashSale = flashSaleDAO.getFlashSaleByProductId(product.getId());
+                        // SỬ DỤNG PHƯƠNG THỨC QUÁ TẢI, TRUYỀN DB HIỆN CÓ
+                        FlashSale flashSale = flashSaleDAO_internal.getFlashSaleByProductId(product.getId(), db);
                         if (flashSale != null) {
                             unitPrice = flashSale.getSalePrice();
+                            Log.d(TAG, "  -> Product " + product.getId() + " is in Flash Sale. Unit Price: " + unitPrice);
                         } else {
                             unitPrice = product.getPrice();
+                            Log.d(TAG, "  -> Product " + product.getId() + " is normal price. Unit Price: " + unitPrice);
                         }
 
                         ContentValues detailValues = new ContentValues();
@@ -82,36 +92,65 @@ public class OrderDAO {
                         detailValues.put("unitPrice", unitPrice);
 
                         long detailId = db.insert("order_details", null, detailValues);
-                        Log.d("OrderDAO", "OrderDetail created with ID: " + detailId + " for Order ID: " + orderId);
+                        if (detailId == -1) {
+                            Log.e(TAG, "  -> FAILED to insert OrderDetail for ProductID: " + item.getProductId() + " (returned -1).");
+                            db.endTransaction();
+                            Log.e(TAG, "Transaction rolled back due to failed OrderDetail insert.");
+                            return -1;
+                        } else {
+                            Log.d(TAG, "  -> OrderDetail for ProductID: " + item.getProductId() + " inserted successfully. Detail ID: " + detailId);
+                        }
 
                         // 3. Cập nhật số lượng tồn kho của sản phẩm
                         int newStock = product.getStock() - item.getQuantity();
-                        productDAO.updateProductStock(product.getId(), newStock);
-                        Log.d("OrderDAO", "Updated stock for Product " + product.getId() + " to " + newStock);
+                        // SỬ DỤNG PHƯƠNG THỨC QUÁ TẢI, TRUYỀN DB HIỆN CÓ
+                        int rowsAffected = productDAO_internal.updateProductStock(product.getId(), newStock, db);
+                        if (rowsAffected <= 0) {
+                            Log.e(TAG, "  -> FAILED to update stock for ProductID: " + product.getId() + ". Rows affected: " + rowsAffected);
+                            db.endTransaction();
+                            Log.e(TAG, "Transaction rolled back due to failed stock update.");
+                            return -1;
+                        } else {
+                            Log.d(TAG, "  -> Stock updated for ProductID: " + product.getId() + ". New stock: " + newStock);
+                        }
+
+                    } else {
+                        Log.e(TAG, "  -> Product with ID: " + item.getProductId() + " NOT FOUND in database while processing cart item.");
+                        db.endTransaction();
+                        Log.e(TAG, "Transaction rolled back because a product was not found.");
+                        return -1;
                     }
                 }
-                db.setTransactionSuccessful(); // Đánh dấu transaction thành công
+                db.setTransactionSuccessful();
+                Log.d(TAG, "Transaction successful.");
             } else {
-                Log.e("OrderDAO", "Failed to create order, orderId is -1.");
+                Log.e(TAG, "Failed to create order header. orderId is -1.");
             }
         } catch (Exception e) {
-            Log.e("OrderDAO", "Error creating order: " + e.getMessage());
+            Log.e(TAG, "EXCEPTION during order creation: " + e.getMessage(), e);
             orderId = -1;
         } finally {
-            if (db != null) {
-                db.endTransaction(); // Kết thúc transaction
-                db.close(); // Đóng database
+            if (db != null && db.inTransaction()) {
+                db.endTransaction();
+                Log.d(TAG, "Transaction ended.");
+            }
+            if (db != null && db.isOpen()) {
+                db.close();
+                Log.d(TAG, "Database connection closed.");
             }
         }
+        Log.d(TAG, "createOrder finished. Returning orderId: " + orderId);
         return orderId;
     }
 
+    // PHƯƠNG THỨC getOrdersByUserId() - ĐẢM BẢO NÓ NẰM NGOÀI PHƯƠNG THỨC createOrder()
     public List<Order> getOrdersByUserId(int userId) {
         List<Order> orderList = new ArrayList<>();
         SQLiteDatabase db = null;
         Cursor cursor = null;
         try {
             db = dbHelper.getReadableDatabase();
+            Log.d(TAG, "getOrdersByUserId: Database opened for reading.");
             cursor = db.query("orders", null, "userId=?", new String[]{String.valueOf(userId)}, null, null, "orderDate DESC");
 
             if (cursor != null && cursor.moveToFirst()) {
@@ -129,22 +168,30 @@ public class OrderDAO {
                     );
                     orderList.add(order);
                 } while (cursor.moveToNext());
+                Log.d(TAG, "getOrdersByUserId: Found " + orderList.size() + " orders for userId: " + userId);
+            } else {
+                Log.d(TAG, "getOrdersByUserId: No orders found for userId: " + userId);
             }
         } catch (Exception e) {
-            Log.e("OrderDAO", "Error getting orders by user ID: " + e.getMessage());
+            Log.e(TAG, "Exception in getOrdersByUserId: " + e.getMessage(), e);
         } finally {
             if (cursor != null) cursor.close();
-            if (db != null) db.close();
+            if (db != null && db.isOpen()) {
+                db.close();
+                Log.d(TAG, "getOrdersByUserId: Database connection closed.");
+            }
         }
         return orderList;
     }
 
+    // PHƯƠNG THỨC getOrderDetailsByOrderId() - ĐẢM BẢO NÓ NẰM NGOÀI PHƯƠNG THỨC createOrder()
     public List<OrderDetail> getOrderDetailsByOrderId(int orderId) {
         List<OrderDetail> detailList = new ArrayList<>();
         SQLiteDatabase db = null;
         Cursor cursor = null;
         try {
             db = dbHelper.getReadableDatabase();
+            Log.d(TAG, "getOrderDetailsByOrderId: Database opened for reading.");
             cursor = db.query("order_details", null, "orderId=?", new String[]{String.valueOf(orderId)}, null, null, null);
 
             if (cursor != null && cursor.moveToFirst()) {
@@ -158,22 +205,30 @@ public class OrderDAO {
                     );
                     detailList.add(detail);
                 } while (cursor.moveToNext());
+                Log.d(TAG, "getOrderDetailsByOrderId: Found " + detailList.size() + " details for orderId: " + orderId);
+            } else {
+                Log.d(TAG, "getOrderDetailsByOrderId: No details found for orderId: " + orderId);
             }
         } catch (Exception e) {
-            Log.e("OrderDAO", "Error getting order details by order ID: " + e.getMessage());
+            Log.e(TAG, "Exception in getOrderDetailsByOrderId: " + e.getMessage(), e);
         } finally {
             if (cursor != null) cursor.close();
-            if (db != null) db.close();
+            if (db != null && db.isOpen()) {
+                db.close();
+                Log.d(TAG, "getOrderDetailsByOrderId: Database connection closed.");
+            }
         }
         return detailList;
     }
 
+    // PHƯƠNG THỨC getOrderById() - ĐẢM BẢO NÓ NẰM NGOÀI PHƯƠNG THỨC createOrder()
     public Order getOrderById(int orderId) {
         SQLiteDatabase db = null;
         Cursor cursor = null;
         Order order = null;
         try {
             db = dbHelper.getReadableDatabase();
+            Log.d(TAG, "getOrderById: Database opened for reading.");
             cursor = db.query("orders", null, "id=?", new String[]{String.valueOf(orderId)}, null, null, null);
             if (cursor != null && cursor.moveToFirst()) {
                 order = new Order(
@@ -187,12 +242,18 @@ public class OrderDAO {
                         cursor.getString(cursor.getColumnIndexOrThrow("paymentMethod")),
                         cursor.getString(cursor.getColumnIndexOrThrow("status"))
                 );
+                Log.d(TAG, "getOrderById: Order found with ID: " + orderId);
+            } else {
+                Log.d(TAG, "getOrderById: No order found for ID: " + orderId);
             }
         } catch (Exception e) {
-            Log.e("OrderDAO", "Error getting order by ID: " + e.getMessage());
+            Log.e(TAG, "Exception in getOrderById: " + e.getMessage(), e);
         } finally {
             if (cursor != null) cursor.close();
-            if (db != null) db.close();
+            if (db != null && db.isOpen()) {
+                db.close();
+                Log.d(TAG, "getOrderById: Database connection closed.");
+            }
         }
         return order;
     }
