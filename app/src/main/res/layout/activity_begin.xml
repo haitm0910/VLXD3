@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:gravity="center"
+
+    android:id="@+id/main"
+ >
+
+    <ImageView
+        android:layout_width="161dp"
+        android:layout_height="149dp"
+        android:layout_marginTop="-80dp"
+        android:layout_marginBottom="16dp"
+        /> <TextView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="HP Material"
+    android:textSize="32sp"
+    android:textColor="#427EA6"
+    android:textStyle="bold"
+    android:layout_marginBottom="8dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Chất lượng tạo nên giá trị"
+        android:textSize="18sp"
+        android:textColor="#6A97B6" />
+
+    <Button
+        android:id="@+id/login_button"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:text="Login"
+        android:textColor="@android:color/white"
+        android:textSize="16sp"
+        android:backgroundTint="#427EA6"
+        android:layout_marginTop="32dp"
+        android:paddingVertical="12dp"
+        android:textAllCaps="false" />
+
+    <Button
+        android:id="@+id/signup_button"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:backgroundTint="#6A97B6"
+        android:paddingVertical="12dp"
+        android:text="Sign up"
+        android:textAllCaps="false"
+        android:textColor="@android:color/white" />
+
+</LinearLayout>
