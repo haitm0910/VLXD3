@@ -42,6 +42,9 @@
         <activity
             android:name=".ActivityBasket"
             android:exported="true" />
+        <activity
+            android:name=".ActivityFlashSale"
+            android:exported="true" />
     </application>
 
 </manifest>

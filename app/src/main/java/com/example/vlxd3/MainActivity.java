@@ -67,6 +67,16 @@ public class MainActivity extends AppCompatActivity {
             });
         }
 
+        // Thêm sự kiện click cho textViewSeeAllProfitable
+        TextView textViewSeeAllProfitable = findViewById(R.id.textViewSeeAllProfitable);
+        if (textViewSeeAllProfitable != null) {
+            textViewSeeAllProfitable.setOnClickListener(v -> {
+                Intent intent = new Intent(MainActivity.this, ActivityFlashSale.class);
+                intent.putExtra("userId", userId); // Truyền userId nếu cần
+                startActivity(intent);
+            });
+        }
+
         // Xử lý bottom navigation
         LinearLayout bottomNav = findViewById(R.id.bottomNavigationView);
         if (bottomNav != null && bottomNav.getChildCount() >= 2) {

@@ -6,8 +6,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="#F8F8FF"
-    android:id="@+id/main"
-  >
+    android:id="@+id/main">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -70,13 +69,21 @@
                 android:gravity="center_vertical">
 
                 <TextView
-                    android:id="@+id/product_price"
+                    android:id="@+id/product_original_price"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Giá sản phẩm"
-                    android:textSize="20sp"
-                    android:textColor="#EF1313"
-                    android:textStyle="bold"/>
+                    android:text="Giá gốc"
+                    android:textSize="16sp"
+                    android:textColor="#888888"
+                    android:layout_marginEnd="8dp"
+                    android:visibility="gone"/> <TextView
+                android:id="@+id/product_price"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Giá sản phẩm"
+                android:textSize="20sp"
+                android:textColor="#EF1313"
+                android:textStyle="bold"/>
 
                 <TextView
                     android:id="@+id/product_availability"
