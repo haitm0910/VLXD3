@@ -1,5 +1,3 @@
-// File: FlashSaleDAO.java
-
 package com.example.vlxd3.dao;
 
 import android.content.ContentValues;
@@ -9,7 +7,6 @@ import android.database.sqlite.SQLiteDatabase;
 
 import com.example.vlxd3.database.DatabaseHelper;
 import com.example.vlxd3.model.FlashSale;
-import com.example.vlxd3.model.Product; // Vẫn giữ import này vì có thể dùng ProductDAO để lấy Product
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,11 +37,11 @@ public class FlashSaleDAO {
         if (cursor != null && cursor.moveToFirst()) {
             do {
                 FlashSale flashSale = new FlashSale(
-                        cursor.getInt(cursor.getColumnIndexOrThrow("id")),
-                        cursor.getInt(cursor.getColumnIndexOrThrow("productId")),
-                        cursor.getDouble(cursor.getColumnIndexOrThrow("salePrice")),
-                        cursor.getString(cursor.getColumnIndexOrThrow("startDate")),
-                        cursor.getString(cursor.getColumnIndexOrThrow("endDate"))
+                    cursor.getInt(cursor.getColumnIndexOrThrow("id")),
+                    cursor.getInt(cursor.getColumnIndexOrThrow("productId")),
+                    cursor.getDouble(cursor.getColumnIndexOrThrow("salePrice")),
+                    cursor.getString(cursor.getColumnIndexOrThrow("startDate")),
+                    cursor.getString(cursor.getColumnIndexOrThrow("endDate"))
                 );
                 list.add(flashSale);
             } while (cursor.moveToNext());
@@ -59,11 +56,11 @@ public class FlashSaleDAO {
         Cursor cursor = db.query("flash_sale", null, "productId=?", new String[]{String.valueOf(productId)}, null, null, null);
         if (cursor != null && cursor.moveToFirst()) {
             FlashSale flashSale = new FlashSale(
-                    cursor.getInt(cursor.getColumnIndexOrThrow("id")),
-                    cursor.getInt(cursor.getColumnIndexOrThrow("productId")),
-                    cursor.getDouble(cursor.getColumnIndexOrThrow("salePrice")),
-                    cursor.getString(cursor.getColumnIndexOrThrow("startDate")),
-                    cursor.getString(cursor.getColumnIndexOrThrow("endDate"))
+                cursor.getInt(cursor.getColumnIndexOrThrow("id")),
+                cursor.getInt(cursor.getColumnIndexOrThrow("productId")),
+                cursor.getDouble(cursor.getColumnIndexOrThrow("salePrice")),
+                cursor.getString(cursor.getColumnIndexOrThrow("startDate")),
+                cursor.getString(cursor.getColumnIndexOrThrow("endDate"))
             );
             cursor.close();
             db.close();
@@ -74,7 +71,25 @@ public class FlashSaleDAO {
         return null;
     }
 
-    // Đã loại bỏ phương thức getFlashSaleProducts() để tránh nhầm lẫn và lỗi kiểu dữ liệu.
-    // Nếu bạn muốn lấy sản phẩm kèm thông tin flash sale, bạn sẽ làm điều đó trong Adapter
-    // hoặc Activity bằng cách kết hợp FlashSaleDAO và ProductDAO.
+    public List<FlashSale> getFlashSaleProducts() {
+        List<FlashSale> flashSaleProducts = new ArrayList<>();
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Cursor cursor = db.query("flash_sale", null, null, null, null, null, null);
+
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
+                FlashSale flashSale = new FlashSale(
+                    cursor.getInt(cursor.getColumnIndexOrThrow("id")),
+                    cursor.getInt(cursor.getColumnIndexOrThrow("productId")),
+                    cursor.getDouble(cursor.getColumnIndexOrThrow("salePrice")),
+                    cursor.getString(cursor.getColumnIndexOrThrow("startDate")),
+                    cursor.getString(cursor.getColumnIndexOrThrow("endDate"))
+                );
+                flashSaleProducts.add(flashSale);
+            } while (cursor.moveToNext());
+            cursor.close();
+        }
+        db.close();
+        return flashSaleProducts;
+    }
 }

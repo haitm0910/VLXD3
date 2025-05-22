@@ -23,10 +23,10 @@
             android:exported="false" />
         <activity
             android:name=".PersonalActivity"
-            android:exported="false" />
+            android:exported="true" />
         <activity
             android:name=".AccountActivity"
-            android:exported="false" />
+            android:exported="true" />
         <activity
             android:name=".LoginActivity"
             android:exported="true">
@@ -54,6 +54,13 @@
         <activity
             android:name=".ActivityBasket"
             android:exported="true" />
+        <activity
+            android:name=".ActivityCheckOut"
+            android:exported="true" />
+        <activity
+            android:name=".ActivityFlashSale"
+            android:exported="true" />
+            />
     </application>
 
 </manifest>
