@@ -44,7 +44,7 @@ public class SignUpActivity extends AppCompatActivity {
                     Toast.makeText(SignUpActivity.this, "Mật khẩu không khớp!", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                User user = new User(username, password, username, ""); // fullName và phone tạm thời để trống
+                User user = new User(username, password,username, "","",""); // fullName và phone tạm thời để trống
                 long id = userDAO.registerUser(user);
                 if (id > 0) {
                     Toast.makeText(SignUpActivity.this, "Đăng ký thành công!", Toast.LENGTH_SHORT).show();

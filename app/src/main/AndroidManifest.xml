@@ -51,6 +51,13 @@
         <activity
             android:name=".ActivityFlashSale"
             android:exported="true" />
+        <activity
+            android:name=".OrderActivity"
+            android:exported="true" />
+        <activity
+            android:name=".OrderDetailActivity"
+            android:exported="true" />
+
             />
     </application>
 

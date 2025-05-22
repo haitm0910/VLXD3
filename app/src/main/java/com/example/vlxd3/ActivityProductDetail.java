@@ -105,7 +105,7 @@ public class ActivityProductDetail extends AppCompatActivity {
         // Kiểm tra nếu là sản phẩm Flash Sale
         boolean isFlashSale = getIntent().getBooleanExtra("isFlashSale", false);
         if (isFlashSale) {
-            TextView discountedPrice = findViewById(R.id.discounted);
+            TextView discountedPrice = findViewById(R.id.product_price);
             if (discountedPrice != null) {
                 discountedPrice.setVisibility(View.VISIBLE);
                 discountedPrice.setText("Giá giảm: " + product.getDiscountedPrice() + " đ");

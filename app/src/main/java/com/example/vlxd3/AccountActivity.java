@@ -22,6 +22,7 @@ public class AccountActivity extends AppCompatActivity {
     private TextView accountNameHeaderTextView;
     private LinearLayout optionLogout;
     private LinearLayout optionPersonalInfo;
+    private LinearLayout optionMyOrders;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,6 +32,7 @@ public class AccountActivity extends AppCompatActivity {
         accountNameHeaderTextView = findViewById(R.id.tv_account_name_header);
         optionLogout = findViewById(R.id.option_dang_xuat);
         optionPersonalInfo = findViewById(R.id.option_thong_tin_ca_nhan);
+        optionMyOrders = findViewById(R.id.option_don_hang_cua_toi_header);
 
         userId = getIntent().getIntExtra("userId", -1);
 
@@ -58,10 +60,18 @@ public class AccountActivity extends AppCompatActivity {
                 });
             }
 
-            // SỬA SỰ KIỆN CLICK CHO TÙY CHỌN "THÔNG TIN CÁ NHÂN"
             if (optionPersonalInfo != null) {
                 optionPersonalInfo.setOnClickListener(v -> {
-                    Intent intent = new Intent(AccountActivity.this, PersonalActivity.class); // <-- Đã sửa ở đây
+                    Intent intent = new Intent(AccountActivity.this, PersonalActivity.class);
+                    intent.putExtra("userId", userId);
+                    startActivity(intent);
+                });
+            }
+
+            // SỬA SỰ KIỆN CLICK CHO TÙY CHỌN "ĐƠN HÀNG CỦA TÔI"
+            if (optionMyOrders != null) {
+                optionMyOrders.setOnClickListener(v -> {
+                    Intent intent = new Intent(AccountActivity.this, OrderActivity.class); // <-- Đã sửa ở đây
                     intent.putExtra("userId", userId);
                     startActivity(intent);
                 });
@@ -72,7 +82,7 @@ public class AccountActivity extends AppCompatActivity {
             accountNameHeaderTextView.setText("Người dùng");
         }
 
-        ImageView backButton = findViewById(R.id.iv_back_arrow_account);
+        ImageView backButton = findViewById(R.id.backButtonAccount);
         if (backButton != null) {
             backButton.setOnClickListener(v -> finish());
         }
