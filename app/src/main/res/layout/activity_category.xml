@@ -9,14 +9,14 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="56dp"
         android:background="#427EA6"
         android:paddingVertical="8dp">
 
         <ImageView
             android:id="@+id/backButtonCategory"
-            android:layout_width="19dp"
-            android:layout_height="35dp"
+            android:layout_width="22dp"
+            android:layout_height="52dp"
             android:layout_marginStart="16dp"
             android:src="@drawable/back_arrow"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -28,15 +28,16 @@
             android:id="@+id/textView"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:gravity="center"
             android:layout_marginEnd="30dp"
+            android:gravity="center"
             android:text="Danh mục sản phẩm"
             android:textColor="#FFFF"
             android:textSize="26sp"
-            app:layout_constraintTop_toTopOf="parent"
+            android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/backButtonCategory"
-            app:layout_constraintEnd_toEndOf="parent" />
+            app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

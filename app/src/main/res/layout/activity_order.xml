@@ -7,6 +7,43 @@
     android:background="#F0F0F0"
     tools:context=".OrderActivity">
 
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/order_activity_header"
+        android:layout_width="0dp"
+        android:layout_height="56dp" android:background="#427EA6"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <ImageView
+            android:id="@+id/iv_back_arrow_orders"
+            android:layout_width="41dp"
+            android:layout_height="56dp"
+            android:layout_marginStart="16dp"
+            android:src="@drawable/back_arrow"
+            app:tint="#FFFFFF"
+            android:contentDescription="Back Button"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="8dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+        <TextView
+            android:id="@+id/tv_my_orders_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Đơn hàng của tôi"
+            android:textColor="@android:color/white"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/iv_back_arrow_orders" app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginEnd="30dp" /> </androidx.constraintlayout.widget.ConstraintLayout>
+
     <LinearLayout
         android:id="@+id/status_header_bar"
         android:layout_width="0dp"
@@ -16,7 +53,7 @@
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toBottomOf="@+id/order_activity_header">
 
         <TextView
             android:id="@+id/tv_status_pending"
