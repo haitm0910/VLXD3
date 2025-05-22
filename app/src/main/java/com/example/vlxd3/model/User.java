@@ -1,3 +1,4 @@
+// File: User.java
 package com.example.vlxd3.model;
 
 public class User {
@@ -6,17 +7,23 @@ public class User {
     private String password;
     private String fullName;
     private String phone;
+    private String email;   // <-- THÊM THUỘC TÍNH NÀY
+    private String address; // <-- THÊM THUỘC TÍNH NÀY
 
-    public User(int id, String username, String password, String fullName, String phone) {
+    // Constructor đầy đủ
+    public User(int id, String username, String password, String fullName, String phone, String email, String address) { // <-- CẬP NHẬT CONSTRUCTOR
         this.id = id;
         this.username = username;
         this.password = password;
         this.fullName = fullName;
         this.phone = phone;
+        this.email = email;
+        this.address = address;
     }
 
-    public User(String username, String password, String fullName, String phone) {
-        this(-1, username, password, fullName, phone);
+    // Constructor khi tạo User mới (id tự động tăng)
+    public User(String username, String password, String fullName, String phone, String email, String address) { // <-- CẬP NHẬT CONSTRUCTOR
+        this(-1, username, password, fullName, phone, email, address);
     }
 
     // Getters and setters
@@ -30,4 +37,8 @@ public class User {
     public void setFullName(String fullName) { this.fullName = fullName; }
     public String getPhone() { return phone; }
     public void setPhone(String phone) { this.phone = phone; }
+    public String getEmail() { return email; }   // <-- THÊM GETTER
+    public void setEmail(String email) { this.email = email; } // <-- THÊM SETTER
+    public String getAddress() { return address; } // <-- THÊM GETTER
+    public void setAddress(String address) { this.address = address; } // <-- THÊM SETTER
 }

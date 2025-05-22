@@ -11,7 +11,7 @@ import java.util.Locale;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String DATABASE_NAME = "vlxd3.db";
-    public static final int DATABASE_VERSION = 4; // <-- TĂNG DATABASE_VERSION
+    public static final int DATABASE_VERSION = 5; // <-- TĂNG DATABASE_VERSION
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -19,9 +19,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL("CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE, password TEXT, fullName TEXT, phone TEXT)");
-        // SỬA BẢNG CATEGORIES ĐỂ CÓ CỘT IMAGE
-        db.execSQL("CREATE TABLE categories (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, image TEXT)"); // <-- SỬA DÒNG NÀY
+        // SỬA BẢNG USERS ĐỂ THÊM CỘT EMAIL VÀ ADDRESS
+        db.execSQL("CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE, password TEXT, fullName TEXT, phone TEXT, email TEXT, address TEXT)"); // <-- SỬA DÒNG NÀY
+        db.execSQL("CREATE TABLE categories (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, image TEXT)");
         db.execSQL("CREATE TABLE products (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, categoryId INTEGER, price REAL, image TEXT, description TEXT, stock INTEGER, FOREIGN KEY(categoryId) REFERENCES categories(id))");
         db.execSQL("CREATE TABLE cart (id INTEGER PRIMARY KEY AUTOINCREMENT, userId INTEGER, productId INTEGER, quantity INTEGER, FOREIGN KEY(userId) REFERENCES users(id), FOREIGN KEY(productId) REFERENCES products(id))");
         db.execSQL("CREATE TABLE flash_sale (id INTEGER PRIMARY KEY AUTOINCREMENT, productId INTEGER, salePrice REAL, startDate TEXT, endDate TEXT, FOREIGN KEY(productId) REFERENCES products(id))");
@@ -49,9 +49,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 
         // Thêm dữ liệu mẫu cho categories VỚI HÌNH ẢNH
-        // Bạn cần có các drawable resources tương ứng trong thư mục res/drawable
-        // Ví dụ: sat, cat, go, ximang, thep, gachoplat (là tên các file ảnh trong drawable)
-        db.execSQL("INSERT INTO categories (name, image) VALUES " + // <-- SỬA DÒNG NÀY
+        db.execSQL("INSERT INTO categories (name, image) VALUES " +
                 "('Sắt', 'icon_cat_sat'), " +
                 "('Cát', 'icon_cat_cat'), " +
                 "('Gỗ', 'icon_cat_go'), " +
@@ -68,7 +66,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "('Thép cuộn', 5, 18000, '', 'Thép cuộn dùng cho xây dựng', 60)," +
                 "('Gạch Lát Nền 60x60', 6, 120000, '', 'Gạch lát nền cao cấp 60x60 chống trơn trượt', 75)");
 
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-DD HH:mm:ss", Locale.getDefault());
         Calendar calendar = Calendar.getInstance();
         String startDate = sdf.format(calendar.getTime());
 
@@ -89,7 +87,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS cart");
         db.execSQL("DROP TABLE IF EXISTS products");
         db.execSQL("DROP TABLE IF EXISTS categories");
-        db.execSQL("DROP TABLE IF EXISTS users");
+        db.execSQL("DROP TABLE IF EXISTS users"); // Xóa bảng users cuối cùng
         onCreate(db);
     }
 }
