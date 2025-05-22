@@ -1,4 +1,5 @@
 // File: MainActivity.java
+
 package com.example.vlxd3;
 
 import android.content.Intent;
@@ -7,19 +8,21 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.ImageView; // Import ImageView
+import android.widget.ImageView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-import androidx.recyclerview.widget.LinearLayoutManager; // Import LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView; // Import RecyclerView
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.vlxd3.dao.CategoryDAO; // Import CategoryDAO
+import com.example.vlxd3.dao.CategoryDAO;
+import com.example.vlxd3.dao.FlashSaleDAO; // Import FlashSaleDAO
 import com.example.vlxd3.dao.UserDAO;
-import com.example.vlxd3.model.Category; // Import Category
+import com.example.vlxd3.model.Category;
+import com.example.vlxd3.model.FlashSale; // Import FlashSale
 import com.example.vlxd3.model.User;
 
 import java.util.List;
@@ -29,8 +32,10 @@ public class MainActivity extends AppCompatActivity {
     private int userId;
     private User user;
     private UserDAO userDAO;
-    private RecyclerView recyclerViewCategories; // Khai báo RecyclerView
-    private CategoryDAO categoryDAO; // Khai báo CategoryDAO
+    private RecyclerView recyclerViewCategories;
+    private CategoryDAO categoryDAO;
+    private RecyclerView recyclerViewFlashSales; // Khai báo RecyclerView cho Flash Sale
+    private FlashSaleDAO flashSaleDAO; // Khai báo FlashSaleDAO
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,12 +60,11 @@ public class MainActivity extends AppCompatActivity {
 
         userDAO = new UserDAO(this);
         user = userDAO.getUserById(userId);
-        TextView textViewTitle = findViewById(R.id.textViewTitle); // TextView để hiển thị tên người dùng
+        TextView textViewTitle = findViewById(R.id.textViewTitle);
         if (textViewTitle != null && user != null) {
             textViewTitle.setText("Xin chào, " + user.getFullName());
         }
 
-        // Thêm sự kiện click cho textViewSeeAllCriteria
         TextView textViewSeeAllCriteria = findViewById(R.id.textViewSeeAllCriteria);
         if (textViewSeeAllCriteria != null) {
             textViewSeeAllCriteria.setOnClickListener(new View.OnClickListener() {
@@ -74,21 +78,32 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // Xử lý RecyclerView cho Danh mục sản phẩm
-        recyclerViewCategories = findViewById(R.id.recyclerViewCriteria); // Ánh xạ RecyclerView
-        categoryDAO = new CategoryDAO(this); // Khởi tạo CategoryDAO
+        recyclerViewCategories = findViewById(R.id.recyclerViewCriteria);
+        categoryDAO = new CategoryDAO(this);
 
-        // Lấy danh sách danh mục (có thể giới hạn số lượng nếu chỉ muốn hiển thị 3-4 danh mục nổi bật)
         List<Category> allCategories = categoryDAO.getAllCategories();
-        // Giả sử bạn muốn hiển thị 3-4 danh mục đầu tiên
-        // List<Category> displayedCategories = allCategories.subList(0, Math.min(allCategories.size(), 4));
-        // Để đơn giản, hiển thị tất cả các danh mục
-        List<Category> displayedCategories = allCategories;
+        List<Category> displayedCategories = allCategories; // Lấy tất cả hoặc giới hạn số lượng
 
-        // Thiết lập LayoutManager (cuộn ngang)
         recyclerViewCategories.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        // Tạo và gán Adapter
         CategoryMainAdapter categoryMainAdapter = new CategoryMainAdapter(this, displayedCategories, userId);
         recyclerViewCategories.setAdapter(categoryMainAdapter);
+
+
+        // Xử lý RecyclerView cho Sản phẩm Flash Sale
+        recyclerViewFlashSales = findViewById(R.id.recyclerViewProducts); // Ánh xạ RecyclerView cho Flash Sale
+        flashSaleDAO = new FlashSaleDAO(this); // Khởi tạo FlashSaleDAO
+
+        // Lấy danh sách các sản phẩm flash sale (ví dụ: tất cả hoặc chỉ một vài sản phẩm đầu tiên)
+        List<FlashSale> allFlashSales = flashSaleDAO.getAllFlashSales();
+        // Giả sử bạn muốn hiển thị một số sản phẩm flash sale nổi bật
+        // List<FlashSale> displayedFlashSales = allFlashSales.subList(0, Math.min(allFlashSales.size(), 5));
+        // Để đơn giản, hiển thị tất cả các flash sale
+        List<FlashSale> displayedFlashSales = allFlashSales;
+
+
+        recyclerViewFlashSales.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        FlashSaleMainAdapter flashSaleMainAdapter = new FlashSaleMainAdapter(this, displayedFlashSales, userId);
+        recyclerViewFlashSales.setAdapter(flashSaleMainAdapter);
 
 
         // Xử lý bottom navigation
@@ -118,6 +133,15 @@ public class MainActivity extends AppCompatActivity {
                 intent.putExtra("userId", userId);
                 startActivity(intent);
             });
+            // Thêm sự kiện cho "Xem tất cả" Flash Sale nếu bạn có nút đó trong layout
+            TextView textViewSeeAllProfitable = findViewById(R.id.textViewSeeAllProfitable);
+            if (textViewSeeAllProfitable != null) {
+                textViewSeeAllProfitable.setOnClickListener(v -> {
+                    Intent intent = new Intent(MainActivity.this, ActivityFlashSale.class);
+                    intent.putExtra("userId", userId);
+                    startActivity(intent);
+                });
+            }
         }
     }
 }
