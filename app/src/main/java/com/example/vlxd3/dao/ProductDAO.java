@@ -1,3 +1,5 @@
+// File: ProductDAO.java
+
 package com.example.vlxd3.dao;
 
 import android.content.ContentValues;
@@ -26,6 +28,7 @@ public class ProductDAO {
         values.put("price", product.getPrice());
         values.put("image", product.getImage());
         values.put("description", product.getDescription());
+        values.put("stock", product.getStock()); // Đảm bảo lưu stock khi thêm sản phẩm
         long id = db.insert("products", null, values);
         db.close();
         return id;
@@ -38,13 +41,13 @@ public class ProductDAO {
         if (cursor != null && cursor.moveToFirst()) {
             do {
                 Product product = new Product(
-                    cursor.getInt(cursor.getColumnIndexOrThrow("id")),
-                    cursor.getString(cursor.getColumnIndexOrThrow("name")),
-                    cursor.getInt(cursor.getColumnIndexOrThrow("categoryId")),
-                    cursor.getDouble(cursor.getColumnIndexOrThrow("price")),
-                    cursor.getString(cursor.getColumnIndexOrThrow("image")),
-                    cursor.getString(cursor.getColumnIndexOrThrow("description")),
-                    cursor.getInt(cursor.getColumnIndexOrThrow("stock"))
+                        cursor.getInt(cursor.getColumnIndexOrThrow("id")),
+                        cursor.getString(cursor.getColumnIndexOrThrow("name")),
+                        cursor.getInt(cursor.getColumnIndexOrThrow("categoryId")),
+                        cursor.getDouble(cursor.getColumnIndexOrThrow("price")),
+                        cursor.getString(cursor.getColumnIndexOrThrow("image")),
+                        cursor.getString(cursor.getColumnIndexOrThrow("description")),
+                        cursor.getInt(cursor.getColumnIndexOrThrow("stock"))
                 );
                 list.add(product);
             } while (cursor.moveToNext());
@@ -59,13 +62,13 @@ public class ProductDAO {
         Cursor cursor = db.query("products", null, "id=?", new String[]{String.valueOf(id)}, null, null, null);
         if (cursor != null && cursor.moveToFirst()) {
             Product product = new Product(
-                cursor.getInt(cursor.getColumnIndexOrThrow("id")),
-                cursor.getString(cursor.getColumnIndexOrThrow("name")),
-                cursor.getInt(cursor.getColumnIndexOrThrow("categoryId")),
-                cursor.getDouble(cursor.getColumnIndexOrThrow("price")),
-                cursor.getString(cursor.getColumnIndexOrThrow("image")),
-                cursor.getString(cursor.getColumnIndexOrThrow("description")),
-                cursor.getInt(cursor.getColumnIndexOrThrow("stock"))
+                    cursor.getInt(cursor.getColumnIndexOrThrow("id")),
+                    cursor.getString(cursor.getColumnIndexOrThrow("name")),
+                    cursor.getInt(cursor.getColumnIndexOrThrow("categoryId")),
+                    cursor.getDouble(cursor.getColumnIndexOrThrow("price")),
+                    cursor.getString(cursor.getColumnIndexOrThrow("image")),
+                    cursor.getString(cursor.getColumnIndexOrThrow("description")),
+                    cursor.getInt(cursor.getColumnIndexOrThrow("stock"))
             );
             cursor.close();
             db.close();
@@ -74,5 +77,15 @@ public class ProductDAO {
         if (cursor != null) cursor.close();
         db.close();
         return null;
+    }
+
+    // THÊM PHƯƠNG THỨC NÀY ĐỂ CẬP NHẬT TỒN KHO
+    public int updateProductStock(int productId, int newStock) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("stock", newStock);
+        int rowsAffected = db.update("products", values, "id=?", new String[]{String.valueOf(productId)});
+        db.close();
+        return rowsAffected;
     }
 }

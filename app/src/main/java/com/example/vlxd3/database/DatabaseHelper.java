@@ -6,13 +6,13 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import java.text.SimpleDateFormat; // Thêm import này
-import java.util.Calendar; // Thêm import này
-import java.util.Locale; // Thêm import này
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Locale;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String DATABASE_NAME = "vlxd3.db";
-    public static final int DATABASE_VERSION = 2;
+    public static final int DATABASE_VERSION = 3; // <-- TĂNG DATABASE_VERSION
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -25,6 +25,29 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("CREATE TABLE products (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, categoryId INTEGER, price REAL, image TEXT, description TEXT, stock INTEGER, FOREIGN KEY(categoryId) REFERENCES categories(id))");
         db.execSQL("CREATE TABLE cart (id INTEGER PRIMARY KEY AUTOINCREMENT, userId INTEGER, productId INTEGER, quantity INTEGER, FOREIGN KEY(userId) REFERENCES users(id), FOREIGN KEY(productId) REFERENCES products(id))");
         db.execSQL("CREATE TABLE flash_sale (id INTEGER PRIMARY KEY AUTOINCREMENT, productId INTEGER, salePrice REAL, startDate TEXT, endDate TEXT, FOREIGN KEY(productId) REFERENCES products(id))");
+
+        // THÊM CÁC BẢNG MỚI CHO ĐƠN HÀNG VÀ CHI TIẾT ĐƠN HÀNG
+        db.execSQL("CREATE TABLE orders (" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "userId INTEGER, " +
+                "orderDate TEXT, " + // YYYY-MM-DD HH:MM:SS
+                "totalAmount REAL, " +
+                "customerName TEXT, " +
+                "customerAddress TEXT, " +
+                "customerPhone TEXT, " +
+                "paymentMethod TEXT, " +
+                "status TEXT, " + // e.g., "Pending", "Confirmed", "Delivered"
+                "FOREIGN KEY(userId) REFERENCES users(id))");
+
+        db.execSQL("CREATE TABLE order_details (" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "orderId INTEGER, " +
+                "productId INTEGER, " +
+                "quantity INTEGER, " +
+                "unitPrice REAL, " + // Giá sản phẩm tại thời điểm mua (có thể là giá sale)
+                "FOREIGN KEY(orderId) REFERENCES orders(id), " +
+                "FOREIGN KEY(productId) REFERENCES products(id))");
+
 
         // Thêm dữ liệu mẫu cho categories
         db.execSQL("INSERT INTO categories (name) VALUES ('Sắt'), ('Cát'), ('Gỗ'), ('Xi măng'), ('Thép'), ('Gạch ốp lát')");
@@ -47,11 +70,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         String endDate = sdf.format(calendar.getTime()); // Ngày kết thúc sau 7 ngày
 
         // Thêm dữ liệu mẫu cho flash_sale
-        // Sản phẩm 1: Xi măng Hà Tiên (id = 4), sale 20% từ 95.000 -> 76.000
         db.execSQL("INSERT INTO flash_sale (productId, salePrice, startDate, endDate) VALUES " +
                 "(4, 76000.0, '" + startDate + "', '" + endDate + "')");
-
-        // Sản phẩm 2: Gạch Lát Nền 60x60 (id = 6), sale 15% từ 120.000 -> 102.000
         db.execSQL("INSERT INTO flash_sale (productId, salePrice, startDate, endDate) VALUES " +
                 "(6, 102000.0, '" + startDate + "', '" + endDate + "')");
     }
@@ -59,6 +79,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // Xóa tất cả các bảng và tạo lại
+        db.execSQL("DROP TABLE IF EXISTS orders"); // Xóa bảng orders trước order_details
+        db.execSQL("DROP TABLE IF EXISTS order_details"); // Xóa bảng order_details trước products/cart
         db.execSQL("DROP TABLE IF EXISTS flash_sale");
         db.execSQL("DROP TABLE IF EXISTS cart");
         db.execSQL("DROP TABLE IF EXISTS products");

@@ -13,6 +13,9 @@
         android:theme="@style/Theme.VLXD3"
         tools:targetApi="31">
         <activity
+            android:name=".ActivityCheckOut"
+            android:exported="false" />
+        <activity
             android:name=".AccountActivity"
             android:exported="false" />
         <activity

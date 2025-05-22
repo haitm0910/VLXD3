@@ -10,6 +10,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ImageView;
+import android.widget.Button; // Thêm import Button
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -24,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-public class ActivityBasket extends AppCompatActivity implements CartUpdateListener { // <-- THÊM implements CartUpdateListener
+public class ActivityBasket extends AppCompatActivity implements CartUpdateListener {
     private ListView basketListView;
     private TextView totalPriceTextView;
     private CartDAO cartDAO;
@@ -37,6 +38,7 @@ public class ActivityBasket extends AppCompatActivity implements CartUpdateListe
     private TextView itemCountTextView;
     private TextView emptyBasketMessage;
     private LinearLayout summaryCheckoutContainer;
+    private Button goToCheckoutButton; // <-- KHAI BÁO NÚT
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +50,7 @@ public class ActivityBasket extends AppCompatActivity implements CartUpdateListe
         itemCountTextView = findViewById(R.id.item_count_text);
         emptyBasketMessage = findViewById(R.id.empty_basket_message);
         summaryCheckoutContainer = findViewById(R.id.summary_checkout_container);
+        goToCheckoutButton = findViewById(R.id.go_to_checkout_button); // <-- ÁNH XẠ NÚT
 
         userId = getIntent().getIntExtra("userId", -1);
         if (userId == -1) {
@@ -62,13 +65,23 @@ public class ActivityBasket extends AppCompatActivity implements CartUpdateListe
         productDAO = new ProductDAO(this);
         flashSaleDAO = new FlashSaleDAO(this);
 
-        // Khởi tạo adapter với listener là chính Activity này
-        adapter = new BasketAdapter(this, new ArrayList<>(), new ArrayList<>(), flashSaleDAO, this); // Khởi tạo với list rỗng ban đầu
-
+        adapter = new BasketAdapter(this, new ArrayList<>(), new ArrayList<>(), flashSaleDAO, this);
         basketListView.setAdapter(adapter);
 
-        // Gọi phương thức để tải và hiển thị dữ liệu giỏ hàng ban đầu
         refreshCartData();
+
+        // Xử lý nút "Thanh toán giỏ hàng"
+        goToCheckoutButton.setOnClickListener(v -> {
+            if (cartItems.isEmpty()) {
+                Toast.makeText(this, "Giỏ hàng trống. Không thể thanh toán.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            Intent intent = new Intent(ActivityBasket.this, ActivityCheckOut.class);
+            intent.putExtra("userId", userId); // Truyền userId sang màn hình thanh toán
+            // Có thể truyền thêm tổng tiền hoặc danh sách sản phẩm nếu muốn ActivityCheckOut không cần truy vấn lại
+            startActivity(intent);
+        });
+
 
         // Xử lý bottom navigation
         LinearLayout bottomNav = findViewById(R.id.bottomNavigationView);
@@ -94,10 +107,9 @@ public class ActivityBasket extends AppCompatActivity implements CartUpdateListe
         }
     }
 
-    // Phương thức để tải lại dữ liệu giỏ hàng và cập nhật UI
     private void refreshCartData() {
         cartItems = cartDAO.getCartItems(userId);
-        products = new ArrayList<>(); // Tạo lại list products để đảm bảo đồng bộ
+        products = new ArrayList<>();
         double total = 0;
 
         for (CartItem item : cartItems) {
@@ -113,13 +125,9 @@ public class ActivityBasket extends AppCompatActivity implements CartUpdateListe
             }
         }
 
-        // Cập nhật dữ liệu cho Adapter
-        adapter = new BasketAdapter(this, cartItems, products, flashSaleDAO, this); // Tạo lại adapter hoặc cập nhật dữ liệu của adapter hiện có
-        basketListView.setAdapter(adapter); // Set lại adapter
-        // Hoặc nếu bạn muốn cập nhật dữ liệu mà không tạo lại adapter:
-        // adapter.setCartItems(cartItems); // Nếu bạn thêm setter vào BasketAdapter
-        // adapter.setProducts(products); // Nếu bạn thêm setter vào BasketAdapter
-        // adapter.notifyDataSetChanged();
+        // Cập nhật adapter với danh sách mới
+        adapter = new BasketAdapter(this, cartItems, products, flashSaleDAO, this);
+        basketListView.setAdapter(adapter);
 
         itemCountTextView.setText(cartItems.size() + " sản phẩm");
 
@@ -141,7 +149,6 @@ public class ActivityBasket extends AppCompatActivity implements CartUpdateListe
 
     @Override
     public void onCartUpdated() {
-        // Khi giỏ hàng được cập nhật từ Adapter (thêm, xóa, sửa số lượng), gọi lại refreshCartData
         refreshCartData();
     }
 }
