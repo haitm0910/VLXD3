@@ -113,7 +113,7 @@
                     android:id="@+id/vat_included_label"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Đã bao gồm VAT"
+                    android:text="Chưa bao gồm VAT"
                     android:textColor="#888888"
                     android:textSize="14sp" />
             </LinearLayout>

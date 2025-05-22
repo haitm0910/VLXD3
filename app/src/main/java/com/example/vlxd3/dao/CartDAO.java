@@ -94,18 +94,4 @@ public class CartDAO {
         db.close();
     }
 
-    // Phương thức addToCartToFile đã được loại bỏ
-    // public void addToCartToFile(Context context, CartItem item) {
-    //     try {
-    //         File file = new File(context.getFilesDir(), "UserCart_" + item.getUserId() + ".txt");
-    //         FileOutputStream fos = new FileOutputStream(file, true);
-    //         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fos));
-    //         writer.write(item.getProductId() + "," + item.getQuantity());
-    //         writer.newLine();
-    //         writer.close();
-    //         fos.close();
-    //     } catch (IOException e) {
-    //         e.printStackTrace();
-    //     }
-    // }
 }
