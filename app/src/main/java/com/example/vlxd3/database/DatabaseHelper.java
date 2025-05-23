@@ -11,16 +11,22 @@ import java.util.Locale;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String DATABASE_NAME = "vlxd3.db";
-    public static final int DATABASE_VERSION = 6; // <-- TĂNG DATABASE_VERSION
+    public static final int DATABASE_VERSION = 7; // <-- TĂNG DATABASE_VERSION
+    private Context context; // <-- THÊM BIẾN NÀY
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        this.context = context; // <-- GÁN CONTEXT
+    }
+    public Context getContext() {
+        return context;
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        // SỬA BẢNG USERS ĐỂ THÊM CỘT EMAIL VÀ ADDRESS
-        db.execSQL("CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE, password TEXT, fullName TEXT, phone TEXT, email TEXT, address TEXT)"); // <-- SỬA DÒNG NÀY
+        // SỬA BẢNG USERS ĐỂ THÊM CỘT EMAIL, ADDRESS VÀ ROLE
+        db.execSQL("CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE, password TEXT, fullName TEXT, phone TEXT, email TEXT, address TEXT, role TEXT DEFAULT 'customer')"); // <-- SỬA DÒNG NÀY (Thêm role TEXT DEFAULT 'customer')
+
         db.execSQL("CREATE TABLE categories (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, image TEXT)");
         db.execSQL("CREATE TABLE products (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, categoryId INTEGER, price REAL, image TEXT, description TEXT, stock INTEGER, FOREIGN KEY(categoryId) REFERENCES categories(id))");
         db.execSQL("CREATE TABLE cart (id INTEGER PRIMARY KEY AUTOINCREMENT, userId INTEGER, productId INTEGER, quantity INTEGER, FOREIGN KEY(userId) REFERENCES users(id), FOREIGN KEY(productId) REFERENCES products(id))");
@@ -66,7 +72,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "('Thép cuộn', 5, 18000, '', 'Thép cuộn dùng cho xây dựng', 60)," +
                 "('Gạch Lát Nền 60x60', 6, 120000, '', 'Gạch lát nền cao cấp 60x60 chống trơn trượt', 75)");
 
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-DD HH:mm:ss", Locale.getDefault());
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
         Calendar calendar = Calendar.getInstance();
         String startDate = sdf.format(calendar.getTime());
 
@@ -77,6 +83,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "(4, 76000.0, '" + startDate + "', '" + endDate + "')");
         db.execSQL("INSERT INTO flash_sale (productId, salePrice, startDate, endDate) VALUES " +
                 "(6, 102000.0, '" + startDate + "', '" + endDate + "')");
+
+        // Thêm một tài khoản admin mẫu
+        // Mật khẩu "adminpass" sẽ được mã hóa trong ứng dụng thực tế
+        db.execSQL("INSERT INTO users (username, password, fullName, phone, email, address, role) VALUES " +
+                "('admin', 'adminpass', 'Quản trị viên', '0987654321', 'admin@example.com', '123 Đường Admin, TP.HCM', 'admin')");
     }
 
     @Override
@@ -87,7 +98,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS cart");
         db.execSQL("DROP TABLE IF EXISTS products");
         db.execSQL("DROP TABLE IF EXISTS categories");
-        db.execSQL("DROP TABLE IF EXISTS users"); // Xóa bảng users cuối cùng
+        db.execSQL("DROP TABLE IF EXISTS users");
         onCreate(db);
     }
 }

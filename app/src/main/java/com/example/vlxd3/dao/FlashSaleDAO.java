@@ -10,23 +10,16 @@ import android.util.Log;
 
 import com.example.vlxd3.database.DatabaseHelper;
 import com.example.vlxd3.model.FlashSale;
-import com.example.vlxd3.model.Product;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class FlashSaleDAO {
-    private static final String TAG = "FlashSaleDAO"; // Tag cho Logcat
+    private static final String TAG = "FlashSaleDAO";
     private DatabaseHelper dbHelper;
 
-    public FlashSaleDAO(Context context) {
+    public FlashSaleDAO(Context context) { // Constructor chính
         dbHelper = new DatabaseHelper(context);
-    }
-
-    // Constructor mới nhận SQLiteDatabase (để sử dụng khi gọi từ DAO khác)
-    // KHÔNG NÊN ĐÓNG DB Ở ĐÂY. DB SẼ ĐƯỢC ĐÓNG BỞI NGƯỜI GỌI.
-    public FlashSaleDAO(DatabaseHelper dbHelper) { // Thêm constructor này
-        this.dbHelper = dbHelper;
     }
 
     public long addFlashSale(FlashSale flashSale) {
@@ -49,13 +42,50 @@ public class FlashSaleDAO {
         }
     }
 
+    // PHƯƠNG THỨC MỚI: Cập nhật Flash Sale
+    public boolean updateFlashSale(FlashSale flashSale) {
+        SQLiteDatabase db = null;
+        int rowsAffected = 0;
+        try {
+            db = dbHelper.getWritableDatabase();
+            ContentValues values = new ContentValues();
+            values.put("productId", flashSale.getProductId());
+            values.put("salePrice", flashSale.getSalePrice());
+            values.put("startDate", flashSale.getStartDate());
+            values.put("endDate", flashSale.getEndDate());
+            rowsAffected = db.update("flash_sale", values, "id=?", new String[]{String.valueOf(flashSale.getId())});
+            Log.d(TAG, "Updated flash sale ID " + flashSale.getId() + ". Rows affected: " + rowsAffected);
+        } catch (Exception e) {
+            Log.e(TAG, "Error updating flash sale: " + e.getMessage(), e);
+        } finally {
+            if (db != null && db.isOpen()) db.close();
+        }
+        return rowsAffected > 0;
+    }
+
+    // PHƯƠNG THỨC MỚI: Xóa Flash Sale
+    public boolean deleteFlashSale(int flashSaleId) {
+        SQLiteDatabase db = null;
+        int rowsAffected = 0;
+        try {
+            db = dbHelper.getWritableDatabase();
+            rowsAffected = db.delete("flash_sale", "id=?", new String[]{String.valueOf(flashSaleId)});
+            Log.d(TAG, "Deleted flash sale ID " + flashSaleId + ". Rows affected: " + rowsAffected);
+        } catch (Exception e) {
+            Log.e(TAG, "Error deleting flash sale: " + e.getMessage(), e);
+        } finally {
+            if (db != null && db.isOpen()) db.close();
+        }
+        return rowsAffected > 0;
+    }
+
     public List<FlashSale> getAllFlashSales() {
         List<FlashSale> list = new ArrayList<>();
         SQLiteDatabase db = null;
         Cursor cursor = null;
         try {
             db = dbHelper.getReadableDatabase();
-            cursor = db.query("flash_sale", null, null, null, null, null, null);
+            cursor = db.query("flash_sale", null, null, null, null, null, "startDate DESC"); // Sắp xếp theo ngày bắt đầu
             if (cursor != null && cursor.moveToFirst()) {
                 do {
                     FlashSale flashSale = new FlashSale(
@@ -77,15 +107,13 @@ public class FlashSaleDAO {
         return list;
     }
 
-    // Phương thức getFlashSaleByProductId ban đầu
-    public FlashSale getFlashSaleByProductId(int productId) {
+    public FlashSale getFlashSaleById(int id) { // Phương thức mới để lấy FlashSale theo ID
         SQLiteDatabase db = null;
         Cursor cursor = null;
         FlashSale flashSale = null;
         try {
             db = dbHelper.getReadableDatabase();
-            Log.d(TAG, "getFlashSaleByProductId: Database opened for reading (new connection).");
-            cursor = db.query("flash_sale", null, "productId=?", new String[]{String.valueOf(productId)}, null, null, null);
+            cursor = db.query("flash_sale", null, "id=?", new String[]{String.valueOf(id)}, null, null, null);
             if (cursor != null && cursor.moveToFirst()) {
                 flashSale = new FlashSale(
                         cursor.getInt(cursor.getColumnIndexOrThrow("id")),
@@ -96,22 +124,22 @@ public class FlashSaleDAO {
                 );
             }
         } catch (Exception e) {
-            Log.e(TAG, "Error getting flash sale by product ID (new connection): " + e.getMessage(), e);
+            Log.e(TAG, "Error getting flash sale by ID: " + e.getMessage(), e);
         } finally {
             if (cursor != null) cursor.close();
             if (db != null && db.isOpen()) db.close();
-            Log.d(TAG, "getFlashSaleByProductId: Database connection closed (new connection).");
         }
         return flashSale;
     }
 
-    // PHƯƠNG THỨC getFlashSaleByProductId quá tải: nhận một DB đã mở
-    public FlashSale getFlashSaleByProductId(int productId, SQLiteDatabase db) { // <-- THÊM PHƯƠNG THỨC NÀY
+    public FlashSale getFlashSaleByProductId(int productId) { // Phương thức đã có
+        SQLiteDatabase db = null;
         Cursor cursor = null;
         FlashSale flashSale = null;
         try {
-            // KHÔNG GỌI dbHelper.getReadableDatabase() ở đây
-            Log.d(TAG, "getFlashSaleByProductId (overload): Using existing database connection.");
+            db = dbHelper.getReadableDatabase();
+            // Có thể thêm điều kiện ngày để chỉ lấy flash sale đang hoạt động
+            // Ví dụ: "productId=? AND startDate <= DATE('now') AND endDate >= DATE('now')"
             cursor = db.query("flash_sale", null, "productId=?", new String[]{String.valueOf(productId)}, null, null, null);
             if (cursor != null && cursor.moveToFirst()) {
                 flashSale = new FlashSale(
@@ -123,10 +151,10 @@ public class FlashSaleDAO {
                 );
             }
         } catch (Exception e) {
-            Log.e(TAG, "Error getting flash sale by product ID (using existing connection): " + e.getMessage(), e);
+            Log.e(TAG, "Error getting flash sale by product ID: " + e.getMessage(), e);
         } finally {
             if (cursor != null) cursor.close();
-            // KHÔNG ĐÓNG DB Ở ĐÂY. DB ĐƯỢC QUẢN LÝ BỞI NGƯỜI GỌI.
+            if (db != null && db.isOpen()) db.close();
         }
         return flashSale;
     }

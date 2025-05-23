@@ -4,13 +4,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg4">
+    android:background="@drawable/bg4"
+    tools:layout_editor_absoluteX="0dp"
+    tools:layout_editor_absoluteY="29dp">
 
     <ImageView
         android:id="@+id/imageViewLogo"
         android:layout_width="145dp"
         android:layout_height="146dp"
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="108dp"
         android:src="@drawable/logo"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -20,12 +22,13 @@
         android:id="@+id/textViewTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="20dp"
         android:text="HP Material"
         android:textColor="#427EA6"
         android:textSize="24sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.501"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imageViewLogo" />
 
@@ -38,6 +41,7 @@
         android:textColor="#427EA6"
         android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.501"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textViewTitle" />
 
@@ -46,23 +50,26 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="24dp"
         android:layout_marginEnd="32dp"
-        app:boxBackgroundMode="filled"
         app:boxBackgroundColor="#FFFFFF"
+        app:boxBackgroundMode="filled"
         app:hintEnabled="true"
         app:hintTextAppearance="@style/TextAppearance.AppCompat.Small"
-        app:layout_constraintTop_toBottomOf="@+id/textViewLogin"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintTop_toBottomOf="@+id/textViewLogin">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/editTextEmail"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Email"
+            android:hint="Tài khoản"
             android:inputType="textEmailAddress"
-            android:textSize="16sp" />
+            android:textSize="16sp"
+            tools:layout_editor_absoluteX="32dp"
+            tools:layout_editor_absoluteY="360dp" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
@@ -70,15 +77,16 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="8dp"
         android:layout_marginEnd="32dp"
-        app:boxBackgroundMode="filled"
         app:boxBackgroundColor="#FFFFFF"
+        app:boxBackgroundMode="filled"
         app:hintEnabled="true"
         app:hintTextAppearance="@style/TextAppearance.AppCompat.Small"
-        app:layout_constraintTop_toBottomOf="@+id/textInputLayoutEmail"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textInputLayoutEmail"
         app:passwordToggleEnabled="true">
 
         <com.google.android.material.textfield.TextInputEditText
@@ -87,14 +95,16 @@
             android:layout_height="wrap_content"
             android:hint="Mật khẩu"
             android:inputType="textPassword"
-            android:textSize="16sp" />
+            android:textSize="16sp"
+            tools:layout_editor_absoluteX="32dp"
+            tools:layout_editor_absoluteY="428dp" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <TextView
         android:id="@+id/textViewForgotPassword"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="16dp"
         android:text="Quên mật khẩu?"
         android:textColor="#427EA6"
         android:textSize="12sp"
@@ -106,12 +116,13 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="75dp"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="20dp"
         android:layout_marginEnd="75dp"
         android:backgroundTint="#427EA6"
         android:text="Đăng nhập"
         android:textColor="#FFFFFF"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textViewForgotPassword" />
 
@@ -119,11 +130,12 @@
         android:id="@+id/textViewSignUp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="28dp"
         android:text="Chưa có tài khoản? Đăng kí"
         android:textColor="#427EA6"
         android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.506"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/buttonLogin" />
 

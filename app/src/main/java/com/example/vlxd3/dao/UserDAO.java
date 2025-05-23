@@ -1,5 +1,4 @@
 // File: UserDAO.java
-
 package com.example.vlxd3.dao;
 
 import android.content.ContentValues;
@@ -12,7 +11,7 @@ import com.example.vlxd3.database.DatabaseHelper;
 import com.example.vlxd3.model.User;
 
 public class UserDAO {
-    private static final String TAG = "UserDAO"; // Thêm TAG
+    private static final String TAG = "UserDAO";
     private DatabaseHelper dbHelper;
 
     public UserDAO(Context context) {
@@ -30,8 +29,9 @@ public class UserDAO {
             values.put("phone", user.getPhone());
             values.put("email", user.getEmail());
             values.put("address", user.getAddress());
+            values.put("role", user.getRole()); // <-- THÊM DÒNG NÀY
             long id = db.insert("users", null, values);
-            Log.d(TAG, "Registered user: " + user.getUsername() + " with ID: " + id);
+            Log.d(TAG, "Registered user: " + user.getUsername() + " with ID: " + id + ", Role: " + user.getRole());
             return id;
         } catch (Exception e) {
             Log.e(TAG, "Error registering user: " + e.getMessage(), e);
@@ -56,7 +56,8 @@ public class UserDAO {
                         cursor.getString(cursor.getColumnIndexOrThrow("fullName")),
                         cursor.getString(cursor.getColumnIndexOrThrow("phone")),
                         cursor.getString(cursor.getColumnIndexOrThrow("email")),
-                        cursor.getString(cursor.getColumnIndexOrThrow("address"))
+                        cursor.getString(cursor.getColumnIndexOrThrow("address")),
+                        cursor.getString(cursor.getColumnIndexOrThrow("role")) // <-- THÊM DÒNG NÀY
                 );
             }
         } catch (Exception e) {
@@ -83,7 +84,8 @@ public class UserDAO {
                         cursor.getString(cursor.getColumnIndexOrThrow("fullName")),
                         cursor.getString(cursor.getColumnIndexOrThrow("phone")),
                         cursor.getString(cursor.getColumnIndexOrThrow("email")),
-                        cursor.getString(cursor.getColumnIndexOrThrow("address"))
+                        cursor.getString(cursor.getColumnIndexOrThrow("address")),
+                        cursor.getString(cursor.getColumnIndexOrThrow("role")) // <-- THÊM DÒNG NÀY
                 );
             }
         } catch (Exception e) {
@@ -95,7 +97,6 @@ public class UserDAO {
         return user;
     }
 
-    // Phương thức để kiểm tra sự tồn tại của username
     public boolean isUsernameExists(String username) {
         SQLiteDatabase db = null;
         Cursor cursor = null;
@@ -115,7 +116,6 @@ public class UserDAO {
         return exists;
     }
 
-
     public boolean updateUserInfo(User user) {
         SQLiteDatabase db = null;
         try {
@@ -125,6 +125,7 @@ public class UserDAO {
             values.put("phone", user.getPhone());
             values.put("email", user.getEmail());
             values.put("address", user.getAddress());
+            values.put("role", user.getRole()); // <-- THÊM DÒNG NÀY (nếu role có thể thay đổi qua đây)
 
             int rowsAffected = db.update("users", values, "id=?", new String[]{String.valueOf(user.getId())});
             Log.d(TAG, "Updated user info for ID " + user.getId() + ". Rows affected: " + rowsAffected);
@@ -137,7 +138,6 @@ public class UserDAO {
         }
     }
 
-    // THÊM PHƯƠNG THỨC NÀY ĐỂ ĐỔI MẬT KHẨU
     public boolean updatePassword(String username, String newPassword) {
         SQLiteDatabase db = null;
         try {

@@ -2,7 +2,7 @@
 
 package com.example.vlxd3;
 
-import android.content.Intent; // Thêm import này
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -44,16 +44,11 @@ public class SignUpActivity extends AppCompatActivity {
                     Toast.makeText(SignUpActivity.this, "Mật khẩu không khớp!", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                User user = new User(username, password,username, "","",""); // fullName và phone tạm thời để trống
+                // SỬA DÒNG NÀY: Gán role mặc định là "customer"
+                User user = new User(username, password, username, "", "", "", "customer"); // <-- Đã sửa ở đây
                 long id = userDAO.registerUser(user);
                 if (id > 0) {
                     Toast.makeText(SignUpActivity.this, "Đăng ký thành công!", Toast.LENGTH_SHORT).show();
-                    // Chuyển về LoginActivity để người dùng đăng nhập
-                    // Bạn có thể cân nhắc chuyển thẳng đến MainActivity và truyền userId nếu muốn
-                    // Ví dụ:
-                    // Intent intent = new Intent(SignUpActivity.this, MainActivity.class);
-                    // intent.putExtra("userId", (int) id);
-                    // startActivity(intent);
                     finish();
                 } else {
                     Toast.makeText(SignUpActivity.this, "Tên đăng nhập đã tồn tại!", Toast.LENGTH_SHORT).show();

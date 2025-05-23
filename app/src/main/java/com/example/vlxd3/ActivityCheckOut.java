@@ -1,4 +1,5 @@
 // File: ActivityCheckOut.java
+
 package com.example.vlxd3;
 
 import android.content.Context;
@@ -9,26 +10,25 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager; // Import này
-import androidx.recyclerview.widget.RecyclerView; // Import này
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.vlxd3.dao.CartDAO;
 import com.example.vlxd3.dao.FlashSaleDAO;
 import com.example.vlxd3.dao.OrderDAO;
 import com.example.vlxd3.dao.ProductDAO;
-import com.example.vlxd3.dao.UserDAO; // Import UserDAO
+import com.example.vlxd3.dao.UserDAO;
 import com.example.vlxd3.model.CartItem;
 import com.example.vlxd3.model.FlashSale;
 import com.example.vlxd3.model.Order;
 import com.example.vlxd3.model.Product;
-import com.example.vlxd3.model.User; // Import User
+import com.example.vlxd3.model.User;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -40,7 +40,12 @@ public class ActivityCheckOut extends AppCompatActivity {
     private EditText nameEditText, addressEditText, phoneEditText;
     private RadioGroup paymentMethodRadioGroup;
     private RadioButton codRadioButton, bankTransferRadioButton;
-    private TextView totalAmountTextView;
+
+    // Các TextView mới cho tổng tiền
+    private TextView subtotalAmountTextView; // TextView cho tổng tiền hàng (trước VAT)
+    private TextView vatAmountTextView;      // TextView cho phí VAT
+    private TextView finalTotalAmountTextView; // TextView cho tổng tiền cuối cùng (bao gồm VAT) - đây là total_amount_text_view cũ
+
     private Button confirmOrderButton;
     private RecyclerView orderSummaryRecyclerView;
 
@@ -52,8 +57,8 @@ public class ActivityCheckOut extends AppCompatActivity {
     private OrderDAO orderDAO;
 
     private List<CartItem> cartItems;
-    private List<Product> productsInCart; // Sản phẩm tương ứng với cartItems
-    private double currentTotalPrice = 0; // Tổng tiền trước VAT
+    private List<Product> productsInCart;
+    private double currentSubtotalPrice = 0; // Đổi tên thành subtotal
 
     private static final double VAT_PERCENTAGE = 0.05; // 5% VAT
 
@@ -69,18 +74,15 @@ public class ActivityCheckOut extends AppCompatActivity {
         paymentMethodRadioGroup = findViewById(R.id.payment_method_radio_group);
         codRadioButton = findViewById(R.id.cod_radio_button);
         bankTransferRadioButton = findViewById(R.id.bank_transfer_radio_button);
-        totalAmountTextView = findViewById(R.id.total_amount_text_view);
+
+        // Ánh xạ các TextView mới
+        subtotalAmountTextView = findViewById(R.id.subtotal_amount_text_view);
+        vatAmountTextView = findViewById(R.id.vat_amount_text_view);
+        finalTotalAmountTextView = findViewById(R.id.total_amount_text_view); // Đây là total_amount_text_view cũ của bạn
+
         confirmOrderButton = findViewById(R.id.confirm_order_button);
         orderSummaryRecyclerView = findViewById(R.id.order_summary_recycler_view);
-        ImageView backButton = findViewById(R.id.iv_back_arrow_checkout); // Ánh xạ ImageView của nút back
-        if (backButton != null) { // Kiểm tra để tránh NullPointerException nếu nút không tìm thấy
-            backButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    finish(); // Phương thức này sẽ đóng Activity hiện tại và quay về Activity trước đó
-                }
-            });
-        }
+
         // Khởi tạo DAOs
         userDAO = new UserDAO(this);
         cartDAO = new CartDAO(this);
@@ -92,13 +94,14 @@ public class ActivityCheckOut extends AppCompatActivity {
         userId = getIntent().getIntExtra("userId", -1);
         if (userId == -1) {
             Toast.makeText(this, "Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại.", Toast.LENGTH_LONG).show();
-            finish(); // Đóng ActivityCheckout
+            finish();
             return;
         }
 
         // Tải thông tin người dùng và giỏ hàng
         loadUserInfo();
-        loadCartItemsAndCalculateTotal();
+        loadCartItemsAndCalculateTotal(); // Phương thức này sẽ tính toán và cập nhật các TextView
+
         setupOrderSummaryRecyclerView();
 
         // Xử lý nút Xác nhận đơn hàng
@@ -108,23 +111,23 @@ public class ActivityCheckOut extends AppCompatActivity {
     private void loadUserInfo() {
         User user = userDAO.getUserById(userId);
         if (user != null) {
-            // Điền sẵn thông tin từ database (nếu có)
             nameEditText.setText(user.getFullName());
             phoneEditText.setText(user.getPhone());
-            // Địa chỉ cần được lưu trong User model nếu muốn tự động điền
-            // Hiện tại User model của bạn chưa có trường address
-            // Nếu bạn muốn lưu địa chỉ, bạn cần thêm trường 'address' vào User model và UserDAO
+            // Đối với địa chỉ, nếu User model của bạn đã có trường 'address', bạn có thể điền vào đây
+            addressEditText.setText(user.getAddress()); // Giả sử user.getAddress() có sẵn
+        } else {
+            Toast.makeText(this, "Không thể tải thông tin người dùng. Vui lòng điền thủ công.", Toast.LENGTH_SHORT).show();
         }
     }
 
     private void loadCartItemsAndCalculateTotal() {
         cartItems = cartDAO.getCartItems(userId);
         productsInCart = new ArrayList<>();
-        currentTotalPrice = 0; // Reset tổng tiền
+        currentSubtotalPrice = 0; // Reset tổng tiền hàng
 
         if (cartItems.isEmpty()) {
             Toast.makeText(this, "Giỏ hàng trống. Không thể thanh toán.", Toast.LENGTH_LONG).show();
-            finish(); // Đóng ActivityCheckout nếu giỏ hàng trống
+            finish();
             return;
         }
 
@@ -134,30 +137,24 @@ public class ActivityCheckOut extends AppCompatActivity {
                 productsInCart.add(p);
                 FlashSale flashSale = flashSaleDAO.getFlashSaleByProductId(p.getId());
                 if (flashSale != null) {
-                    currentTotalPrice += flashSale.getSalePrice() * item.getQuantity();
+                    currentSubtotalPrice += flashSale.getSalePrice() * item.getQuantity();
                 } else {
-                    currentTotalPrice += p.getPrice() * item.getQuantity();
+                    currentSubtotalPrice += p.getPrice() * item.getQuantity();
                 }
             }
         }
 
-        // Tính tổng tiền bao gồm VAT
-        double finalTotalAmount = currentTotalPrice * (1 + VAT_PERCENTAGE);
-        totalAmountTextView.setText(String.format(Locale.getDefault(), "Tổng tiền: %,.0f đ", finalTotalAmount));
+        // --- Cập nhật các TextView tổng tiền ---
+        double vatAmount = currentSubtotalPrice * VAT_PERCENTAGE;
+        double finalTotalAmount = currentSubtotalPrice + vatAmount;
+
+        subtotalAmountTextView.setText(String.format(Locale.getDefault(), "%,.0f đ", currentSubtotalPrice));
+        vatAmountTextView.setText(String.format(Locale.getDefault(), "%,.0f đ", vatAmount));
+        finalTotalAmountTextView.setText(String.format(Locale.getDefault(), "%,.0f đ", finalTotalAmount));
     }
 
     private void setupOrderSummaryRecyclerView() {
-        // Bạn sẽ cần một Adapter riêng cho RecyclerView này để hiển thị tóm tắt đơn hàng
-        // Ví dụ: OrderSummaryAdapter (sẽ không cung cấp code adapter này ở đây để tập trung vào chức năng chính)
-        // Hiện tại, bạn có thể chỉ cần hiển thị tổng tiền chung.
-        // Nếu muốn hiển thị danh sách sản phẩm trong RecyclerView, bạn sẽ cần tạo OrderSummaryAdapter
-        // và OrderSummaryItem (nếu cần một model riêng cho item trong tóm tắt)
         orderSummaryRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        // Ví dụ: orderSummaryRecyclerView.setAdapter(new OrderSummaryAdapter(this, cartItems, productsInCart, flashSaleDAO));
-        // Nếu không có adapter cho RecyclerView, bạn có thể xóa RecyclerView khỏi layout hoặc chỉ hiển thị tổng tiền.
-
-        // Tạm thời, để hiển thị list sản phẩm, chúng ta sẽ tạo một adapter đơn giản ngay đây
-        // Trong một dự án lớn hơn, nên tạo file riêng cho adapter này
         orderSummaryRecyclerView.setAdapter(new OrderSummaryAdapter(this, cartItems, productsInCart, flashSaleDAO));
     }
 
@@ -187,14 +184,11 @@ public class ActivityCheckOut extends AppCompatActivity {
             return;
         }
 
-        // Lấy ngày đặt hàng hiện tại
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
         String orderDate = sdf.format(new Date());
 
-        // Tính tổng tiền cuối cùng (bao gồm VAT)
-        double finalTotalAmount = currentTotalPrice * (1 + VAT_PERCENTAGE);
+        double finalTotalAmount = currentSubtotalPrice * (1 + VAT_PERCENTAGE);
 
-        // Tạo đối tượng Order
         Order newOrder = new Order(
                 userId,
                 orderDate,
@@ -203,27 +197,24 @@ public class ActivityCheckOut extends AppCompatActivity {
                 customerAddress,
                 customerPhone,
                 paymentMethod,
-                "Đang chờ xác nhận" // Trạng thái ban đầu của đơn hàng
+                "Đang chờ xác nhận"
         );
 
-        // Lưu đơn hàng vào database
         long orderId = orderDAO.createOrder(newOrder, cartItems);
 
         if (orderId != -1) {
             Toast.makeText(this, "Đặt hàng thành công! Mã đơn hàng của bạn: " + orderId, Toast.LENGTH_LONG).show();
-            cartDAO.clearCart(userId); // Xóa giỏ hàng sau khi đặt hàng thành công
-            // Chuyển về màn hình chính hoặc màn hình xác nhận đơn hàng
+            cartDAO.clearCart(userId);
             Intent intent = new Intent(ActivityCheckOut.this, MainActivity.class);
-            intent.putExtra("userId", userId); // Truyền userId về MainActivity
+            intent.putExtra("userId", userId);
             startActivity(intent);
-            finish(); // Đóng ActivityCheckOut
+            finish();
         } else {
             Toast.makeText(this, "Đặt hàng thất bại. Vui lòng thử lại!", Toast.LENGTH_LONG).show();
         }
     }
 
     // Adapter nội bộ đơn giản cho RecyclerView hiển thị tóm tắt đơn hàng
-    // Trong thực tế, bạn nên tạo file riêng cho Adapter này
     private class OrderSummaryAdapter extends RecyclerView.Adapter<OrderSummaryAdapter.ViewHolder> {
         private Context adapterContext;
         private List<CartItem> adapterCartItems;
@@ -246,7 +237,7 @@ public class ActivityCheckOut extends AppCompatActivity {
         @Override
         public void onBindViewHolder(ViewHolder holder, int position) {
             CartItem item = adapterCartItems.get(position);
-            Product product = productDAO.getProductById(item.getProductId()); // Lấy product từ DAO
+            Product product = productDAO.getProductById(item.getProductId());
 
             if (product != null) {
                 holder.productName.setText(product.getName());

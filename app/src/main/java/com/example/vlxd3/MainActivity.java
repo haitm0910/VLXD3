@@ -1,11 +1,11 @@
-// File: MainActivity.java
+// File: MainActivity.java (Không có thay đổi nào lớn ở đây)
 
 package com.example.vlxd3;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.EditText; // Import EditText
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -21,11 +21,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.vlxd3.dao.CategoryDAO;
 import com.example.vlxd3.dao.FlashSaleDAO;
-import com.example.vlxd3.dao.ProductDAO; // Import ProductDAO
+import com.example.vlxd3.dao.ProductDAO;
 import com.example.vlxd3.dao.UserDAO;
 import com.example.vlxd3.model.Category;
 import com.example.vlxd3.model.FlashSale;
-import com.example.vlxd3.model.Product; // Import Product
+import com.example.vlxd3.model.Product;
 import com.example.vlxd3.model.User;
 
 import java.util.List;
@@ -40,9 +40,9 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView recyclerViewFlashSales;
     private FlashSaleDAO flashSaleDAO;
 
-    private EditText searchEditText; // Khai báo EditText tìm kiếm
-    private ImageView searchIcon; // Khai báo ImageView nút tìm kiếm
-    private ProductDAO productDAO; // Khai báo ProductDAO để tìm kiếm
+    private EditText searchEditText;
+    private ImageView searchIcon;
+    private ProductDAO productDAO;
 
 
     @Override
@@ -73,24 +73,13 @@ public class MainActivity extends AppCompatActivity {
             textViewTitle.setText("Xin chào, " + user.getFullName());
         }
 
-        // Ánh xạ EditText và ImageView tìm kiếm
         searchEditText = findViewById(R.id.editTextSearch);
         searchIcon = findViewById(R.id.searchIcon);
-        productDAO = new ProductDAO(this); // Khởi tạo ProductDAO
+        productDAO = new ProductDAO(this);
 
-        // Xử lý sự kiện click cho nút tìm kiếm
         if (searchIcon != null) {
             searchIcon.setOnClickListener(v -> performSearch());
         }
-        // Có thể thêm OnEditorActionListener cho searchEditText để tìm kiếm khi nhấn Enter trên bàn phím
-        // searchEditText.setOnEditorActionListener((v, actionId, event) -> {
-        //     if (actionId == EditorInfo.IME_ACTION_SEARCH || actionId == EditorInfo.IME_ACTION_DONE || event.getAction() == KeyEvent.ACTION_DOWN && event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
-        //         performSearch();
-        //         return true;
-        //     }
-        //     return false;
-        // });
-
 
         TextView textViewSeeAllCriteria = findViewById(R.id.textViewSeeAllCriteria);
         if (textViewSeeAllCriteria != null) {
@@ -104,7 +93,6 @@ public class MainActivity extends AppCompatActivity {
             });
         }
 
-        // Xử lý RecyclerView cho Danh mục sản phẩm
         recyclerViewCategories = findViewById(R.id.recyclerViewCriteria);
         categoryDAO = new CategoryDAO(this);
 
@@ -115,7 +103,6 @@ public class MainActivity extends AppCompatActivity {
         CategoryMainAdapter categoryMainAdapter = new CategoryMainAdapter(this, displayedCategories, userId);
         recyclerViewCategories.setAdapter(categoryMainAdapter);
 
-        // Xử lý RecyclerView cho Sản phẩm Flash Sale
         recyclerViewFlashSales = findViewById(R.id.recyclerViewProducts);
         flashSaleDAO = new FlashSaleDAO(this);
 
@@ -127,7 +114,6 @@ public class MainActivity extends AppCompatActivity {
         recyclerViewFlashSales.setAdapter(flashSaleMainAdapter);
 
 
-        // Xử lý bottom navigation
         LinearLayout bottomNav = findViewById(R.id.bottomNavigationView);
         if (bottomNav != null && bottomNav.getChildCount() >= 2) {
             LinearLayout homeLayout = (LinearLayout) bottomNav.getChildAt(0);
@@ -165,7 +151,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // PHƯƠNG THỨC XỬ LÝ TÌM KIẾM
     private void performSearch() {
         String query = searchEditText.getText().toString().trim();
         if (query.isEmpty()) {
@@ -178,20 +163,10 @@ public class MainActivity extends AppCompatActivity {
         if (searchResults.isEmpty()) {
             Toast.makeText(this, "Không tìm thấy sản phẩm nào phù hợp!", Toast.LENGTH_LONG).show();
         } else {
-            // TODO: Hiển thị kết quả tìm kiếm
-            // Cách 1: Hiển thị trong một Activity mới (ví dụ ActivitySearchResults)
-            Intent intent = new Intent(MainActivity.this, ActivityGachOpLat.class); // Tái sử dụng ActivityGachOpLat cho kết quả tìm kiếm
-            // Bạn cần điều chỉnh ActivityGachOpLat để nó có thể nhận List<Product> hoặc một query string
-            // và hiển thị các sản phẩm đó.
-            // Để đơn giản, tôi sẽ chuyển sang ActivityGachOpLat và gửi một query string
-            // Bạn sẽ cần sửa ActivityGachOpLat để nó đọc query string và gọi productDAO.searchProductsByName()
-
-            intent.putExtra("searchQuery", query); // Truyền chuỗi tìm kiếm
-            intent.putExtra("userId", userId); // Đảm bảo userId cũng được truyền
+            Intent intent = new Intent(MainActivity.this, ActivityGachOpLat.class);
+            intent.putExtra("searchQuery", query);
+            intent.putExtra("userId", userId);
             startActivity(intent);
-
-            // Cách 2: Hiển thị ngay trên MainActivity (phức tạp hơn, cần thay đổi RecyclerView hoặc thêm một ListView/RecyclerView mới)
-            // Hiện tại, chúng ta sẽ chuyển sang Activity mới để giữ MainActivity gọn gàng.
         }
     }
 }

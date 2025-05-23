@@ -13,11 +13,31 @@
         android:theme="@style/Theme.VLXD3"
         tools:targetApi="31">
         <activity
-            android:name=".ForgetPassActivity"
+            android:name=".AdminFlashSaleDetailActivity"
             android:exported="false" />
-<!--        <activity-->
-<!--            android:name=".ForgetPass"-->
-<!--            android:exported="false" />-->
+        <activity
+            android:name=".AdminFlashSaleManagementActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AdminProductDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AdminProductManagementActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AdminCategoryManagementActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AdminOrderListActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AdminDashboardActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ForgetPassActivity"
+            android:exported="false" /> <!-- <activity -->
+        <!-- android:name=".ForgetPass" -->
+        <!-- android:exported="false" /> -->
         <activity
             android:name=".ChangePassActivity"
             android:exported="false" />
@@ -66,8 +86,6 @@
         <activity
             android:name=".OrderDetailActivity"
             android:exported="true" />
-
-            />
     </application>
 
 </manifest>
