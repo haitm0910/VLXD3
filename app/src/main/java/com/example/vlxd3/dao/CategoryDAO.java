@@ -8,7 +8,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
-import com.example.vlxd3.database.DatabaseHelper; // Đảm bảo import này
+import com.example.vlxd3.database.DatabaseHelper;
 import com.example.vlxd3.model.Category;
 
 import java.util.ArrayList;
@@ -16,13 +16,11 @@ import java.util.List;
 
 public class CategoryDAO {
     private static final String TAG = "CategoryDAO";
-    private DatabaseHelper dbHelper; // Biến này dùng để lấy kết nối DB
+    private DatabaseHelper dbHelper;
 
-    public CategoryDAO(Context context) { // CHỈ GIỮ CONSTRUCTOR NÀY
+    public CategoryDAO(Context context) { // Constructor duy nhất
         dbHelper = new DatabaseHelper(context);
     }
-
-    // XÓA BỎ MỌI CONSTRUCTOR KHÁC (ví dụ: CategoryDAO(DatabaseHelper dbHelper))
 
     public long addCategory(Category category) {
         SQLiteDatabase db = null;
@@ -38,7 +36,7 @@ public class CategoryDAO {
             Log.e(TAG, "Error adding category: " + e.getMessage(), e);
             return -1;
         } finally {
-            if (db != null && db.isOpen()) db.close(); // Đóng DB
+            if (db != null && db.isOpen()) db.close();
         }
     }
 
@@ -55,7 +53,7 @@ public class CategoryDAO {
         } catch (Exception e) {
             Log.e(TAG, "Error updating category: " + e.getMessage(), e);
         } finally {
-            if (db != null && db.isOpen()) db.close(); // Đóng DB
+            if (db != null && db.isOpen()) db.close();
         }
         return rowsAffected > 0;
     }
@@ -69,10 +67,9 @@ public class CategoryDAO {
 
             // Xóa tất cả sản phẩm thuộc danh mục này trước để tránh lỗi khóa ngoại
             // ProductDAO sẽ được khởi tạo với Context, và tự quản lý DB của nó
-            ProductDAO productDAO = new ProductDAO(dbHelper.getContext()); // LẤY CONTEXT TỪ DBHELPER HOẶC TRUYỀN TỪ ACITIVITY NẾU CÓ
-            // Giả định dbHelper.getContext() có sẵn hoặc truyền context vào constructor CategoryDAO
-            // Nếu không có, bạn cần truyền Context vào constructor CategoryDAO và lưu lại
-            productDAO.deleteProductsByCategoryId(categoryId, db); // Phương thức này nhận DB đã mở
+            ProductDAO productDAO = new ProductDAO(dbHelper.getContext()); // Lấy Context từ dbHelper
+            int productsDeleted = productDAO.deleteProductsByCategoryId(categoryId); // Gọi phương thức ProductDAO tự quản lý DB
+            Log.d(TAG, "Attempted to delete " + productsDeleted + " products for category ID: " + categoryId);
 
             rowsAffected = db.delete("categories", "id=?", new String[]{String.valueOf(categoryId)});
             Log.d(TAG, "Deleted category ID " + categoryId + ". Rows affected: " + rowsAffected);
@@ -80,6 +77,7 @@ public class CategoryDAO {
             db.setTransactionSuccessful(); // Đánh dấu transaction thành công
         } catch (Exception e) {
             Log.e(TAG, "Error deleting category: " + e.getMessage(), e);
+            rowsAffected = 0; // Đặt về 0 nếu có lỗi
         } finally {
             if (db != null && db.inTransaction()) db.endTransaction(); // Kết thúc transaction
             if (db != null && db.isOpen()) db.close(); // Đóng DB
@@ -104,11 +102,12 @@ public class CategoryDAO {
                     list.add(category);
                 } while (cursor.moveToNext());
             }
+            Log.d(TAG, "Retrieved " + list.size() + " categories.");
         } catch (Exception e) {
             Log.e(TAG, "Error getting all categories: " + e.getMessage(), e);
         } finally {
             if (cursor != null) cursor.close();
-            if (db != null && db.isOpen()) db.close(); // Đóng DB
+            if (db != null && db.isOpen()) db.close();
         }
         return list;
     }
@@ -127,11 +126,12 @@ public class CategoryDAO {
                         cursor.getString(cursor.getColumnIndexOrThrow("image"))
                 );
             }
+            Log.d(TAG, "Retrieved category by ID " + id + ": " + (category != null ? category.getName() : "null"));
         } catch (Exception e) {
             Log.e(TAG, "Error getting category by ID: " + e.getMessage(), e);
         } finally {
             if (cursor != null) cursor.close();
-            if (db != null && db.isOpen()) db.close(); // Đóng DB
+            if (db != null && db.isOpen()) db.close();
         }
         return category;
     }

@@ -1,4 +1,5 @@
 // File: UserDAO.java
+
 package com.example.vlxd3.dao;
 
 import android.content.ContentValues;
@@ -14,7 +15,7 @@ public class UserDAO {
     private static final String TAG = "UserDAO";
     private DatabaseHelper dbHelper;
 
-    public UserDAO(Context context) {
+    public UserDAO(Context context) { // Constructor duy nhất
         dbHelper = new DatabaseHelper(context);
     }
 
@@ -29,7 +30,7 @@ public class UserDAO {
             values.put("phone", user.getPhone());
             values.put("email", user.getEmail());
             values.put("address", user.getAddress());
-            values.put("role", user.getRole()); // <-- THÊM DÒNG NÀY
+            values.put("role", user.getRole());
             long id = db.insert("users", null, values);
             Log.d(TAG, "Registered user: " + user.getUsername() + " with ID: " + id + ", Role: " + user.getRole());
             return id;
@@ -57,7 +58,7 @@ public class UserDAO {
                         cursor.getString(cursor.getColumnIndexOrThrow("phone")),
                         cursor.getString(cursor.getColumnIndexOrThrow("email")),
                         cursor.getString(cursor.getColumnIndexOrThrow("address")),
-                        cursor.getString(cursor.getColumnIndexOrThrow("role")) // <-- THÊM DÒNG NÀY
+                        cursor.getString(cursor.getColumnIndexOrThrow("role"))
                 );
             }
         } catch (Exception e) {
@@ -85,7 +86,7 @@ public class UserDAO {
                         cursor.getString(cursor.getColumnIndexOrThrow("phone")),
                         cursor.getString(cursor.getColumnIndexOrThrow("email")),
                         cursor.getString(cursor.getColumnIndexOrThrow("address")),
-                        cursor.getString(cursor.getColumnIndexOrThrow("role")) // <-- THÊM DÒNG NÀY
+                        cursor.getString(cursor.getColumnIndexOrThrow("role"))
                 );
             }
         } catch (Exception e) {
@@ -125,7 +126,7 @@ public class UserDAO {
             values.put("phone", user.getPhone());
             values.put("email", user.getEmail());
             values.put("address", user.getAddress());
-            values.put("role", user.getRole()); // <-- THÊM DÒNG NÀY (nếu role có thể thay đổi qua đây)
+            values.put("role", user.getRole());
 
             int rowsAffected = db.update("users", values, "id=?", new String[]{String.valueOf(user.getId())});
             Log.d(TAG, "Updated user info for ID " + user.getId() + ". Rows affected: " + rowsAffected);

@@ -8,7 +8,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
-import com.example.vlxd3.database.DatabaseHelper;
+import com.example.vlxd3.database.DatabaseHelper; // Đảm bảo import này
 import com.example.vlxd3.model.Product;
 
 import java.util.ArrayList;
@@ -18,11 +18,13 @@ public class ProductDAO {
     private static final String TAG = "ProductDAO";
     private DatabaseHelper dbHelper;
 
-    public ProductDAO(Context context) { // CHỈ GIỮ CONSTRUCTOR NÀY
-        dbHelper = new DatabaseHelper(context);
+    public ProductDAO(Context context) { // CONSTRUCTOR CHÍNH DÙNG CHO HẦU HẾT CÁC TRƯỜNG HỢP
+        this.dbHelper = new DatabaseHelper(context);
     }
 
-    // XÓA BỎ MỌI CONSTRUCTOR KHÁC (ví dụ: ProductDAO(DatabaseHelper dbHelper))
+    public ProductDAO(DatabaseHelper dbHelper) { // CONSTRUCTOR QUÁ TẢI DÙNG KHI GỌI TỪ DAO KHÁC TRONG TRANSACTION
+        this.dbHelper = dbHelper;
+    }
 
     public long addProduct(Product product) {
         SQLiteDatabase db = null;
@@ -76,7 +78,7 @@ public class ProductDAO {
         return list;
     }
 
-    public Product getProductById(int id) { // PHƯƠNG THỨC NÀY SẼ TỰ MỞ VÀ ĐÓNG DB
+    public Product getProductById(int id) { // PHƯƠNG THỨC getProductById TỰ QUẢN LÝ DB
         SQLiteDatabase db = null;
         Cursor cursor = null;
         Product product = null;
@@ -103,9 +105,32 @@ public class ProductDAO {
         return product;
     }
 
-    // XÓA BỎ MỌI PHƯƠNG THỨC getProductById QUÁ TẢI (ví dụ: Product getProductById(int id, SQLiteDatabase db))
+    public Product getProductById(int id, SQLiteDatabase db) { // PHƯƠNG THỨC getProductById QUÁ TẢI (Dùng khi gọi từ DAO khác trong transaction)
+        Cursor cursor = null;
+        Product product = null;
+        try {
+            cursor = db.query("products", null, "id=?", new String[]{String.valueOf(id)}, null, null, null);
+            if (cursor != null && cursor.moveToFirst()) {
+                product = new Product(
+                        cursor.getInt(cursor.getColumnIndexOrThrow("id")),
+                        cursor.getString(cursor.getColumnIndexOrThrow("name")),
+                        cursor.getInt(cursor.getColumnIndexOrThrow("categoryId")),
+                        cursor.getDouble(cursor.getColumnIndexOrThrow("price")),
+                        cursor.getString(cursor.getColumnIndexOrThrow("image")),
+                        cursor.getString(cursor.getColumnIndexOrThrow("description")),
+                        cursor.getInt(cursor.getColumnIndexOrThrow("stock"))
+                );
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error getting product by ID (using existing DB): " + e.getMessage(), e);
+        } finally {
+            if (cursor != null) cursor.close();
+            // KHÔNG ĐÓNG DB Ở ĐÂY. DB ĐƯỢC QUẢN LÝ BỞI NGƯỜI GỌI.
+        }
+        return product;
+    }
 
-    public int updateProductStock(int productId, int newStock) { // PHƯƠNG THỨC NÀY SẼ TỰ MỞ VÀ ĐÓNG DB
+    public int updateProductStock(int productId, int newStock) { // PHƯƠNG THỨC updateProductStock TỰ QUẢN LÝ DB
         SQLiteDatabase db = null;
         try {
             db = dbHelper.getWritableDatabase();
@@ -122,16 +147,31 @@ public class ProductDAO {
         }
     }
 
-    // XÓA BỎ MỌI PHƯƠNG THỨC updateProductStock QUÁ TẢI (ví dụ: updateProductStock(int productId, int newStock, SQLiteDatabase db))
-
-    public int deleteProductsByCategoryId(int categoryId, SQLiteDatabase db) {
-        // Phương thức này vẫn sẽ nhận DB đã mở từ bên ngoài (CategoryDAO)
-        // để đảm bảo transaction là đồng bộ.
-        int rowsAffected = db.delete("products", "categoryId=?", new String[]{String.valueOf(categoryId)});
-        Log.d(TAG, "Deleted " + rowsAffected + " products for category ID: " + categoryId);
+    public int updateProductStock(int productId, int newStock, SQLiteDatabase db) { // PHƯƠNG THỨC updateProductStock QUÁ TẢI (Dùng khi gọi từ DAO khác trong transaction)
+        ContentValues values = new ContentValues();
+        values.put("stock", newStock);
+        int rowsAffected = db.update("products", values, "id=?", new String[]{String.valueOf(productId)});
+        Log.d(TAG, "Updated stock for ProductID: " + productId + " to " + newStock + " (using existing DB). Rows affected: " + rowsAffected);
+        // KHÔNG ĐÓNG DB Ở ĐÂY. DB ĐƯỢC QUẢN LÝ BỞI NGƯỜI GỌI.
         return rowsAffected;
-        // KHÔNG ĐÓNG DB Ở ĐÂY, NGƯỜI GỌI (CategoryDAO) SẼ ĐÓNG.
     }
+
+    public int deleteProductsByCategoryId(int categoryId) { // PHƯƠNG THỨC deleteProductsByCategoryId TỰ QUẢN LÝ DB
+        SQLiteDatabase db = null;
+        int rowsAffected = 0;
+        try {
+            db = dbHelper.getWritableDatabase();
+            rowsAffected = db.delete("products", "categoryId=?", new String[]{String.valueOf(categoryId)});
+            Log.d(TAG, "Deleted " + rowsAffected + " products for category ID: " + categoryId + " (self-managed DB).");
+        } catch (Exception e) {
+            Log.e(TAG, "Error deleting products by category ID (self-managed DB): " + e.getMessage(), e);
+        } finally {
+            if (db != null && db.isOpen()) db.close(); // Đóng DB
+        }
+        return rowsAffected;
+    }
+
+    // public int deleteProductsByCategoryId(int categoryId, SQLiteDatabase db) { ... } // Giữ phương thức này nếu CategoryDAO muốn truyền DB đã mở
 
     public boolean deleteProduct(int productId) {
         SQLiteDatabase db = null;

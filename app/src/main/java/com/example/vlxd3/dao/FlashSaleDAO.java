@@ -18,8 +18,12 @@ public class FlashSaleDAO {
     private static final String TAG = "FlashSaleDAO";
     private DatabaseHelper dbHelper;
 
-    public FlashSaleDAO(Context context) { // Constructor chính
-        dbHelper = new DatabaseHelper(context);
+    public FlashSaleDAO(Context context) { // Constructor duy nhất
+        this.dbHelper = new DatabaseHelper(context);
+    }
+
+    public FlashSaleDAO(DatabaseHelper dbHelper) { // Constructor quá tải cho OrderDAO
+        this.dbHelper = dbHelper;
     }
 
     public long addFlashSale(FlashSale flashSale) {
@@ -42,7 +46,6 @@ public class FlashSaleDAO {
         }
     }
 
-    // PHƯƠNG THỨC MỚI: Cập nhật Flash Sale
     public boolean updateFlashSale(FlashSale flashSale) {
         SQLiteDatabase db = null;
         int rowsAffected = 0;
@@ -63,7 +66,6 @@ public class FlashSaleDAO {
         return rowsAffected > 0;
     }
 
-    // PHƯƠNG THỨC MỚI: Xóa Flash Sale
     public boolean deleteFlashSale(int flashSaleId) {
         SQLiteDatabase db = null;
         int rowsAffected = 0;
@@ -85,7 +87,7 @@ public class FlashSaleDAO {
         Cursor cursor = null;
         try {
             db = dbHelper.getReadableDatabase();
-            cursor = db.query("flash_sale", null, null, null, null, null, "startDate DESC"); // Sắp xếp theo ngày bắt đầu
+            cursor = db.query("flash_sale", null, null, null, null, null, "startDate DESC");
             if (cursor != null && cursor.moveToFirst()) {
                 do {
                     FlashSale flashSale = new FlashSale(
@@ -98,6 +100,7 @@ public class FlashSaleDAO {
                     list.add(flashSale);
                 } while (cursor.moveToNext());
             }
+            Log.d(TAG, "Retrieved " + list.size() + " flash sales.");
         } catch (Exception e) {
             Log.e(TAG, "Error getting all flash sales: " + e.getMessage(), e);
         } finally {
@@ -107,7 +110,7 @@ public class FlashSaleDAO {
         return list;
     }
 
-    public FlashSale getFlashSaleById(int id) { // Phương thức mới để lấy FlashSale theo ID
+    public FlashSale getFlashSaleById(int id) {
         SQLiteDatabase db = null;
         Cursor cursor = null;
         FlashSale flashSale = null;
@@ -123,6 +126,7 @@ public class FlashSaleDAO {
                         cursor.getString(cursor.getColumnIndexOrThrow("endDate"))
                 );
             }
+            Log.d(TAG, "Retrieved flash sale by ID " + id + ": " + (flashSale != null ? flashSale.getProductId() : "null"));
         } catch (Exception e) {
             Log.e(TAG, "Error getting flash sale by ID: " + e.getMessage(), e);
         } finally {
@@ -132,14 +136,12 @@ public class FlashSaleDAO {
         return flashSale;
     }
 
-    public FlashSale getFlashSaleByProductId(int productId) { // Phương thức đã có
+    public FlashSale getFlashSaleByProductId(int productId) { // Phương thức này tự mở và đóng DB
         SQLiteDatabase db = null;
         Cursor cursor = null;
         FlashSale flashSale = null;
         try {
             db = dbHelper.getReadableDatabase();
-            // Có thể thêm điều kiện ngày để chỉ lấy flash sale đang hoạt động
-            // Ví dụ: "productId=? AND startDate <= DATE('now') AND endDate >= DATE('now')"
             cursor = db.query("flash_sale", null, "productId=?", new String[]{String.valueOf(productId)}, null, null, null);
             if (cursor != null && cursor.moveToFirst()) {
                 flashSale = new FlashSale(
@@ -150,11 +152,36 @@ public class FlashSaleDAO {
                         cursor.getString(cursor.getColumnIndexOrThrow("endDate"))
                 );
             }
+            Log.d(TAG, "Retrieved flash sale by Product ID " + productId + ": " + (flashSale != null ? flashSale.getSalePrice() : "null"));
         } catch (Exception e) {
             Log.e(TAG, "Error getting flash sale by product ID: " + e.getMessage(), e);
         } finally {
             if (cursor != null) cursor.close();
             if (db != null && db.isOpen()) db.close();
+        }
+        return flashSale;
+    }
+
+    public FlashSale getFlashSaleByProductId(int productId, SQLiteDatabase db) { // Phương thức quá tải (Dùng khi gọi từ DAO khác trong transaction)
+        Cursor cursor = null;
+        FlashSale flashSale = null;
+        try {
+            cursor = db.query("flash_sale", null, "productId=?", new String[]{String.valueOf(productId)}, null, null, null);
+            if (cursor != null && cursor.moveToFirst()) {
+                flashSale = new FlashSale(
+                        cursor.getInt(cursor.getColumnIndexOrThrow("id")),
+                        cursor.getInt(cursor.getColumnIndexOrThrow("productId")),
+                        cursor.getDouble(cursor.getColumnIndexOrThrow("salePrice")),
+                        cursor.getString(cursor.getColumnIndexOrThrow("startDate")),
+                        cursor.getString(cursor.getColumnIndexOrThrow("endDate"))
+                );
+            }
+            Log.d(TAG, "Retrieved flash sale by Product ID " + productId + " (using existing DB): " + (flashSale != null ? flashSale.getSalePrice() : "null"));
+        } catch (Exception e) {
+            Log.e(TAG, "Error getting flash sale by product ID (using existing DB): " + e.getMessage(), e);
+        } finally {
+            if (cursor != null) cursor.close();
+            // KHÔNG ĐÓNG DB Ở ĐÂY. DB ĐƯỢC QUẢN LÝ BỞI NGƯỜI GỌI.
         }
         return flashSale;
     }

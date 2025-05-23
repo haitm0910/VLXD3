@@ -22,16 +22,16 @@ import java.util.List;
 public class OrderDAO {
     private static final String TAG = "OrderDAO";
     private DatabaseHelper dbHelper;
-    private ProductDAO productDAO_internal; // Sẽ dùng ProductDAO(Context)
-    private FlashSaleDAO flashSaleDAO_internal; // Sẽ dùng FlashSaleDAO(Context)
-    private UserDAO userDAO_internal; // Sẽ dùng UserDAO(Context)
+    // Khởi tạo các DAO nội bộ với dbHelper để chúng có thể chia sẻ kết nối DB
+    private ProductDAO productDAO_internal;
+    private FlashSaleDAO flashSaleDAO_internal;
+    private UserDAO userDAO_internal;
 
     public OrderDAO(Context context) {
         dbHelper = new DatabaseHelper(context);
-        // Khởi tạo các DAO nội bộ với Context
-        productDAO_internal = new ProductDAO(context);
-        flashSaleDAO_internal = new FlashSaleDAO(context);
-        userDAO_internal = new UserDAO(context);
+        productDAO_internal = new ProductDAO(dbHelper); // <-- KHỞI TẠO VỚI DBHELPER
+        flashSaleDAO_internal = new FlashSaleDAO(dbHelper); // <-- KHỞI TẠO VỚI DBHELPER
+        userDAO_internal = new UserDAO(context); // UserDAO vẫn dùng Context vì nó không gọi lại ProductDAO/FlashSaleDAO trong transaction này
         Log.d(TAG, "OrderDAO initialized.");
     }
 
@@ -49,9 +49,9 @@ public class OrderDAO {
         }
 
         try {
-            db = dbHelper.getWritableDatabase();
+            db = dbHelper.getWritableDatabase(); // Mở DB ở chế độ ghi
             Log.d(TAG, "Database opened for writing. Starting transaction.");
-            db.beginTransaction();
+            db.beginTransaction(); // Bắt đầu transaction
 
             // 1. Thêm đơn hàng tổng quát vào bảng 'orders'
             ContentValues orderValues = new ContentValues();
@@ -75,12 +75,11 @@ public class OrderDAO {
                 for (CartItem item : cartItems) {
                     Log.d(TAG, "Processing cart item productId: " + item.getProductId() + ", quantity: " + item.getQuantity());
 
-                    // GỌI PHƯƠNG THỨC KHÔNG QUÁ TẢI (chúng sẽ tự mở/đóng DB của riêng chúng)
-                    Product product = productDAO_internal.getProductById(item.getProductId()); // <-- SỬA Ở ĐÂY
+                    // GỌI PHƯƠNG THỨC QUÁ TẢI TRONG ProductDAO và FlashSaleDAO, TRUYỀN CÙNG KẾT NỐI DB (db)
+                    Product product = productDAO_internal.getProductById(item.getProductId(), db); // <-- SỬA Ở ĐÂY
                     if (product != null) {
                         double unitPrice;
-                        // GỌI PHƯƠNG THỨC KHÔNG QUÁ TẢI
-                        FlashSale flashSale = flashSaleDAO_internal.getFlashSaleByProductId(product.getId()); // <-- SỬA Ở ĐÂY
+                        FlashSale flashSale = flashSaleDAO_internal.getFlashSaleByProductId(product.getId(), db); // <-- SỬA Ở ĐÂY
                         if (flashSale != null) {
                             unitPrice = flashSale.getSalePrice();
                             Log.d(TAG, "  -> Product " + product.getId() + " is in Flash Sale. Unit Price: " + unitPrice);
@@ -108,8 +107,8 @@ public class OrderDAO {
 
                         // 3. Cập nhật số lượng tồn kho của sản phẩm
                         int newStock = product.getStock() - item.getQuantity();
-                        // GỌI PHƯƠNG THỨC KHÔNG QUÁ TẢI
-                        int rowsAffected = productDAO_internal.updateProductStock(product.getId(), newStock); // <-- SỬA Ở ĐÂY
+                        // GỌI PHƯƠNG THỨC QUÁ TẢI
+                        int rowsAffected = productDAO_internal.updateProductStock(product.getId(), newStock, db); // <-- SỬA Ở ĐÂY
                         if (rowsAffected <= 0) {
                             Log.e(TAG, "  -> FAILED to update stock for ProductID: " + product.getId() + ". Rows affected: " + rowsAffected);
                             // Giữ nguyên rollback nếu update stock thất bại
@@ -150,10 +149,6 @@ public class OrderDAO {
         return orderId;
     }
 
-    // CÁC PHƯƠNG THỨC DƯỚI ĐÂY (getOrdersByUserId, getOrderDetailsByOrderId, getOrderById, getAllOrders, getOrdersByStatus, updateOrderStatus)
-    // ĐẢM BẢO NẰM NGOÀI PHƯƠNG THỨC createOrder() và giữ nguyên như đã sửa ở lần trước, với try-finally và đóng db/cursor.
-    // Tôi sẽ chỉ dán lại phần đầu của mỗi phương thức để nhắc vị trí.
-
     public List<Order> getOrdersByUserId(int userId) {
         List<Order> orderList = new ArrayList<>();
         SQLiteDatabase db = null;
@@ -161,13 +156,35 @@ public class OrderDAO {
         try {
             db = dbHelper.getReadableDatabase();
             Log.d(TAG, "getOrdersByUserId: Database opened for reading.");
-            // ... (phần còn lại của phương thức)
-            if (cursor != null) cursor.close();
-            if (db != null && db.isOpen()) db.close();
+            cursor = db.query("orders", null, "userId=?", new String[]{String.valueOf(userId)}, null, null, "orderDate DESC");
+
+            if (cursor != null && cursor.moveToFirst()) {
+                do {
+                    Order order = new Order(
+                            cursor.getInt(cursor.getColumnIndexOrThrow("id")),
+                            cursor.getInt(cursor.getColumnIndexOrThrow("userId")),
+                            cursor.getString(cursor.getColumnIndexOrThrow("orderDate")),
+                            cursor.getDouble(cursor.getColumnIndexOrThrow("totalAmount")),
+                            cursor.getString(cursor.getColumnIndexOrThrow("customerName")),
+                            cursor.getString(cursor.getColumnIndexOrThrow("customerAddress")),
+                            cursor.getString(cursor.getColumnIndexOrThrow("customerPhone")),
+                            cursor.getString(cursor.getColumnIndexOrThrow("paymentMethod")),
+                            cursor.getString(cursor.getColumnIndexOrThrow("status"))
+                    );
+                    orderList.add(order);
+                } while (cursor.moveToNext());
+                Log.d(TAG, "getOrdersByUserId: Found " + orderList.size() + " orders for userId: " + userId);
+            } else {
+                Log.d(TAG, "getOrdersByUserId: No orders found for userId: " + userId);
+            }
         } catch (Exception e) {
             Log.e(TAG, "Exception in getOrdersByUserId: " + e.getMessage(), e);
         } finally {
-            // ... (finally block)
+            if (cursor != null) cursor.close();
+            if (db != null && db.isOpen()) {
+                db.close();
+                Log.d(TAG, "getOrdersByUserId: Database connection closed.");
+            }
         }
         return orderList;
     }
@@ -179,13 +196,31 @@ public class OrderDAO {
         try {
             db = dbHelper.getReadableDatabase();
             Log.d(TAG, "getOrderDetailsByOrderId: Database opened for reading.");
-            // ... (phần còn lại của phương thức)
-            if (cursor != null) cursor.close();
-            if (db != null && db.isOpen()) db.close();
+            cursor = db.query("order_details", null, "orderId=?", new String[]{String.valueOf(orderId)}, null, null, null);
+
+            if (cursor != null && cursor.moveToFirst()) {
+                do {
+                    OrderDetail detail = new OrderDetail(
+                            cursor.getInt(cursor.getColumnIndexOrThrow("id")),
+                            cursor.getInt(cursor.getColumnIndexOrThrow("orderId")),
+                            cursor.getInt(cursor.getColumnIndexOrThrow("productId")),
+                            cursor.getInt(cursor.getColumnIndexOrThrow("quantity")),
+                            cursor.getDouble(cursor.getColumnIndexOrThrow("unitPrice"))
+                    );
+                    detailList.add(detail);
+                } while (cursor.moveToNext());
+                Log.d(TAG, "getOrderDetailsByOrderId: Found " + detailList.size() + " details for orderId: " + orderId);
+            } else {
+                Log.d(TAG, "getOrderDetailsByOrderId: No details found for orderId: " + orderId);
+            }
         } catch (Exception e) {
             Log.e(TAG, "Exception in getOrderDetailsByOrderId: " + e.getMessage(), e);
         } finally {
-            // ... (finally block)
+            if (cursor != null) cursor.close();
+            if (db != null && db.isOpen()) {
+                db.close();
+                Log.d(TAG, "getOrderDetailsByOrderId: Database connection closed.");
+            }
         }
         return detailList;
     }
@@ -197,13 +232,31 @@ public class OrderDAO {
         try {
             db = dbHelper.getReadableDatabase();
             Log.d(TAG, "getOrderById: Database opened for reading.");
-            // ... (phần còn lại của phương thức)
-            if (cursor != null) cursor.close();
-            if (db != null && db.isOpen()) db.close();
+            cursor = db.query("orders", null, "id=?", new String[]{String.valueOf(orderId)}, null, null, null);
+            if (cursor != null && cursor.moveToFirst()) {
+                order = new Order(
+                        cursor.getInt(cursor.getColumnIndexOrThrow("id")),
+                        cursor.getInt(cursor.getColumnIndexOrThrow("userId")),
+                        cursor.getString(cursor.getColumnIndexOrThrow("orderDate")),
+                        cursor.getDouble(cursor.getColumnIndexOrThrow("totalAmount")),
+                        cursor.getString(cursor.getColumnIndexOrThrow("customerName")),
+                        cursor.getString(cursor.getColumnIndexOrThrow("customerAddress")),
+                        cursor.getString(cursor.getColumnIndexOrThrow("customerPhone")),
+                        cursor.getString(cursor.getColumnIndexOrThrow("paymentMethod")),
+                        cursor.getString(cursor.getColumnIndexOrThrow("status"))
+                );
+                Log.d(TAG, "getOrderById: Order found with ID: " + orderId);
+            } else {
+                Log.d(TAG, "getOrderById: No order found for ID: " + orderId);
+            }
         } catch (Exception e) {
             Log.e(TAG, "Exception in getOrderById: " + e.getMessage(), e);
         } finally {
-            // ... (finally block)
+            if (cursor != null) cursor.close();
+            if (db != null && db.isOpen()) {
+                db.close();
+                Log.d(TAG, "getOrderById: Database connection closed.");
+            }
         }
         return order;
     }
@@ -215,13 +268,35 @@ public class OrderDAO {
         try {
             db = dbHelper.getReadableDatabase();
             Log.d(TAG, "getAllOrders: Database opened for reading.");
-            // ... (phần còn lại của phương thức)
-            if (cursor != null) cursor.close();
-            if (db != null && db.isOpen()) db.close();
+            cursor = db.query("orders", null, null, null, null, null, "orderDate DESC");
+
+            if (cursor != null && cursor.moveToFirst()) {
+                do {
+                    Order order = new Order(
+                            cursor.getInt(cursor.getColumnIndexOrThrow("id")),
+                            cursor.getInt(cursor.getColumnIndexOrThrow("userId")),
+                            cursor.getString(cursor.getColumnIndexOrThrow("orderDate")),
+                            cursor.getDouble(cursor.getColumnIndexOrThrow("totalAmount")),
+                            cursor.getString(cursor.getColumnIndexOrThrow("customerName")),
+                            cursor.getString(cursor.getColumnIndexOrThrow("customerAddress")),
+                            cursor.getString(cursor.getColumnIndexOrThrow("customerPhone")),
+                            cursor.getString(cursor.getColumnIndexOrThrow("paymentMethod")),
+                            cursor.getString(cursor.getColumnIndexOrThrow("status"))
+                    );
+                    orderList.add(order);
+                } while (cursor.moveToNext());
+                Log.d(TAG, "getAllOrders: Found " + orderList.size() + " orders.");
+            } else {
+                Log.d(TAG, "getAllOrders: No orders found.");
+            }
         } catch (Exception e) {
             Log.e(TAG, "Exception in getAllOrders: " + e.getMessage(), e);
         } finally {
-            // ... (finally block)
+            if (cursor != null) cursor.close();
+            if (db != null && db.isOpen()) {
+                db.close();
+                Log.d(TAG, "getAllOrders: Database connection closed.");
+            }
         }
         return orderList;
     }
@@ -233,13 +308,35 @@ public class OrderDAO {
         try {
             db = dbHelper.getReadableDatabase();
             Log.d(TAG, "getOrdersByStatus: Database opened for reading. Status: " + status);
-            // ... (phần còn lại của phương thức)
-            if (cursor != null) cursor.close();
-            if (db != null && db.isOpen()) db.close();
+            cursor = db.query("orders", null, "status=?", new String[]{status}, null, null, "orderDate DESC");
+
+            if (cursor != null && cursor.moveToFirst()) {
+                do {
+                    Order order = new Order(
+                            cursor.getInt(cursor.getColumnIndexOrThrow("id")),
+                            cursor.getInt(cursor.getColumnIndexOrThrow("userId")),
+                            cursor.getString(cursor.getColumnIndexOrThrow("orderDate")),
+                            cursor.getDouble(cursor.getColumnIndexOrThrow("totalAmount")),
+                            cursor.getString(cursor.getColumnIndexOrThrow("customerName")),
+                            cursor.getString(cursor.getColumnIndexOrThrow("customerAddress")),
+                            cursor.getString(cursor.getColumnIndexOrThrow("customerPhone")),
+                            cursor.getString(cursor.getColumnIndexOrThrow("paymentMethod")),
+                            cursor.getString(cursor.getColumnIndexOrThrow("status"))
+                    );
+                    orderList.add(order);
+                } while (cursor.moveToNext());
+                Log.d(TAG, "getOrdersByStatus: Found " + orderList.size() + " orders for status: " + status);
+            } else {
+                Log.d(TAG, "getOrdersByStatus: No orders found for status: " + status);
+            }
         } catch (Exception e) {
             Log.e(TAG, "Exception in getOrdersByStatus: " + e.getMessage(), e);
         } finally {
-            // ... (finally block)
+            if (cursor != null) cursor.close();
+            if (db != null && db.isOpen()) {
+                db.close();
+                Log.d(TAG, "getOrdersByStatus: Database connection closed.");
+            }
         }
         return orderList;
     }
@@ -249,12 +346,17 @@ public class OrderDAO {
         int rowsAffected = 0;
         try {
             db = dbHelper.getWritableDatabase();
-            // ... (phần còn lại của phương thức)
-            if (db != null && db.isOpen()) db.close();
+            ContentValues values = new ContentValues();
+            values.put("status", newStatus);
+            rowsAffected = db.update("orders", values, "id=?", new String[]{String.valueOf(orderId)});
+            Log.d(TAG, "updateOrderStatus: Order ID " + orderId + " updated to status '" + newStatus + "'. Rows affected: " + rowsAffected);
         } catch (Exception e) {
             Log.e(TAG, "Exception in updateOrderStatus: " + e.getMessage(), e);
         } finally {
-            // ... (finally block)
+            if (db != null && db.isOpen()) {
+                db.close();
+                Log.d(TAG, "updateOrderStatus: Database connection closed.");
+            }
         }
         return rowsAffected > 0;
     }
