@@ -45,7 +45,20 @@ public class CategoryAdapter extends BaseAdapter {
         ImageView itemImage = convertView.findViewById(R.id.item_image);
         Category category = categoryList.get(position);
         itemText.setText(category.getName());
-        // itemImage.setImageResource(...) // Để bạn tự thêm ảnh sau
+        if (category.getImage() != null && !category.getImage().isEmpty()) {
+            if (category.getImage().startsWith("content://") || category.getImage().startsWith("file://")) {
+                itemImage.setImageURI(android.net.Uri.parse(category.getImage()));
+            } else {
+                int resId = context.getResources().getIdentifier(category.getImage(), "drawable", context.getPackageName());
+                if (resId != 0) {
+                    itemImage.setImageResource(resId);
+                } else {
+                    itemImage.setImageResource(R.drawable.logo); // Ảnh mặc định nếu không tìm thấy
+                }
+            }
+        } else {
+            itemImage.setImageResource(R.drawable.logo); // Ảnh mặc định nếu không có image
+        }
         return convertView;
     }
 }

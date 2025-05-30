@@ -61,21 +61,19 @@
                 android:src="@drawable/logo"
                 android:scaleType="centerCrop"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginBottom="24dp"
+                android:layout_marginBottom="16dp"
                 android:contentDescription="Ảnh sản phẩm"
-                android:background="@drawable/rounded_border_light_grey"/> <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Tên ảnh (ví dụ: product_gach_op_lat)"
-            app:hintEnabled="true"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/et_admin_product_image_name"
-                android:layout_width="match_parent"
+                android:background="@drawable/rounded_border_light_grey"
+                android:clickable="true"
+                android:focusable="true" />
+
+            <Button
+                android:id="@+id/btn_pick_image"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:inputType="textNoSuggestions"
-                android:textSize="16sp" />
-        </com.google.android.material.textfield.TextInputLayout>
+                android:text="Chọn ảnh từ album"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="24dp"/>
 
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"

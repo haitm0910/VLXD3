@@ -1,7 +1,10 @@
 // File: AdminProductDetailActivity.java
 package com.example.vlxd3;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -15,7 +18,7 @@ import com.example.vlxd3.model.Product;
 
 public class AdminProductDetailActivity extends AppCompatActivity {
 
-    private EditText productNameEt, productPriceEt, productStockEt, productDescriptionEt, productImageEt; // productImageEt cho tên file ảnh
+    private EditText productNameEt, productPriceEt, productStockEt, productDescriptionEt; // productImageEt cho tên file ảnh
     private ImageView productImagePreview; // ImageView để hiển thị ảnh
     private Button saveProductButton;
     private ImageView backButton;
@@ -25,6 +28,9 @@ public class AdminProductDetailActivity extends AppCompatActivity {
     private int categoryId;
     private int productId = -1; // -1 nếu là thêm mới, ID sản phẩm nếu là chỉnh sửa
     private boolean isAddingNew = true; // Cờ để phân biệt thêm mới hay chỉnh sửa
+
+    private static final int PICK_IMAGE_REQUEST = 1001;
+    private Uri selectedImageUri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,7 +42,6 @@ public class AdminProductDetailActivity extends AppCompatActivity {
         productPriceEt = findViewById(R.id.et_admin_product_price);
         productStockEt = findViewById(R.id.et_admin_product_stock);
         productDescriptionEt = findViewById(R.id.et_admin_product_description);
-        productImageEt = findViewById(R.id.et_admin_product_image_name); // EditText cho tên ảnh
         productImagePreview = findViewById(R.id.iv_admin_product_image_preview); // ImageView preview
         saveProductButton = findViewById(R.id.btn_admin_save_product);
         backButton = findViewById(R.id.backButtonAdminProductDetail);
@@ -68,13 +73,22 @@ public class AdminProductDetailActivity extends AppCompatActivity {
             saveProductButton.setOnClickListener(v -> saveProduct());
         }
 
-        // Tùy chọn: Thêm listener cho productImageEt để cập nhật preview ảnh khi gõ tên file
-        productImageEt.setOnFocusChangeListener((v, hasFocus) -> {
-            if (!hasFocus) { // Khi mất focus
-                updateImagePreview(productImageEt.getText().toString());
-            }
+        // Xử lý nút chọn ảnh từ album
+        Button pickImageButton = findViewById(R.id.btn_pick_image);
+        pickImageButton.setOnClickListener(v -> {
+            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            intent.setType("image/*");
+            startActivityForResult(intent, PICK_IMAGE_REQUEST);
         });
-        productImageEt.setText(productImageEt.getText()); // Kích hoạt update preview lần đầu
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
+            selectedImageUri = data.getData();
+            productImagePreview.setImageURI(selectedImageUri);
+        }
     }
 
     private void loadProductDetails(int id) {
@@ -84,37 +98,40 @@ public class AdminProductDetailActivity extends AppCompatActivity {
             productPriceEt.setText(String.valueOf(product.getPrice()));
             productStockEt.setText(String.valueOf(product.getStock()));
             productDescriptionEt.setText(product.getDescription());
-            productImageEt.setText(product.getImage());
-            updateImagePreview(product.getImage()); // Cập nhật preview ảnh
+            // productImageEt.setText(product.getImage());
+            // updateImagePreview(product.getImage()); // Cập nhật preview ảnh
 
             // Đảm bảo categoryId được đặt đúng nếu chuyển đổi danh mục
             categoryId = product.getCategoryId();
+
+            // Khi load sản phẩm, nếu product.getImage() != null thì kiểm tra là URI hay tên drawable:
+            if (product.getImage() != null && !product.getImage().isEmpty()) {
+                if (product.getImage().startsWith("content://") || product.getImage().startsWith("file://")) {
+                    selectedImageUri = Uri.parse(product.getImage());
+                    productImagePreview.setImageURI(selectedImageUri);
+                } else {
+                    int resId = getResources().getIdentifier(product.getImage(), "drawable", getPackageName());
+                    if (resId != 0) {
+                        productImagePreview.setImageResource(resId);
+                    } else {
+                        productImagePreview.setImageResource(R.drawable.logo);
+                    }
+                }
+            } else {
+                productImagePreview.setImageResource(R.drawable.logo);
+            }
         } else {
             Toast.makeText(this, "Không tìm thấy sản phẩm để chỉnh sửa.", Toast.LENGTH_SHORT).show();
             finish();
         }
     }
 
-    private void updateImagePreview(String imageName) {
-        if (imageName != null && !imageName.isEmpty()) {
-            int resId = getResources().getIdentifier(imageName, "drawable", getPackageName());
-            if (resId != 0) {
-                productImagePreview.setImageResource(resId);
-            } else {
-                productImagePreview.setImageResource(R.drawable.logo); // Fallback
-            }
-        } else {
-            productImagePreview.setImageResource(R.drawable.logo); // Fallback
-        }
-    }
-
-
     private void saveProduct() {
         String name = productNameEt.getText().toString().trim();
         String priceStr = productPriceEt.getText().toString().trim();
         String stockStr = productStockEt.getText().toString().trim();
         String description = productDescriptionEt.getText().toString().trim();
-        String image = productImageEt.getText().toString().trim();
+        String image = (selectedImageUri != null) ? selectedImageUri.toString() : null; // Lưu URI ảnh vào DB
 
         if (name.isEmpty() || priceStr.isEmpty() || stockStr.isEmpty() || description.isEmpty()) {
             Toast.makeText(this, "Vui lòng nhập đầy đủ thông tin sản phẩm!", Toast.LENGTH_SHORT).show();

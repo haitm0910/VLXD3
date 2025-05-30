@@ -53,7 +53,20 @@ public class ProductAdapter extends BaseAdapter {
         Product product = productList.get(position);
         itemName.setText(product.getName());
         itemPrice.setText(product.getPrice() + " đ");
-        // itemImage.setImageResource(...) // Để bạn tự thêm ảnh sau
+        if (product.getImage() != null && !product.getImage().isEmpty()) {
+            if (product.getImage().startsWith("content://") || product.getImage().startsWith("file://")) {
+                itemImage.setImageURI(android.net.Uri.parse(product.getImage()));
+            } else {
+                int resId = context.getResources().getIdentifier(product.getImage(), "drawable", context.getPackageName());
+                if (resId != 0) {
+                    itemImage.setImageResource(resId);
+                } else {
+                    itemImage.setImageResource(R.drawable.logo);
+                }
+            }
+        } else {
+            itemImage.setImageResource(R.drawable.logo);
+        }
         convertView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

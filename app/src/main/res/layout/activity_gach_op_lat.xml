@@ -13,9 +13,9 @@
         android:layout_height="56dp" android:background="#427EA6">
 
         <ImageView
-            android:id="@+id/iv_back_arrow_product_list"
-            android:layout_width="41dp"
-            android:layout_height="56dp"
+            android:id="@+id/backButtonGachOpLat"
+            android:layout_width="74dp"
+            android:layout_height="46dp"
             android:layout_marginStart="16dp"
             android:clickable="true"
             android:contentDescription="Back Button"
@@ -37,7 +37,7 @@
             android:gravity="center"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/iv_back_arrow_product_list"
+            app:layout_constraintStart_toEndOf="@+id/backButtonGachOpLat"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginEnd="30dp" /> </androidx.constraintlayout.widget.ConstraintLayout>
 

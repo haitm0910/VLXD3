@@ -1,15 +1,16 @@
-// File: MainActivity.java (Không có thay đổi nào lớn ở đây)
+// File: MainActivity.java (Đã thêm chức năng mở AIvlxdActivity)
 
 package com.example.vlxd3;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.ImageView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -149,6 +150,13 @@ public class MainActivity extends AppCompatActivity {
                 });
             }
         }
+
+        Button btnAIVLXD = findViewById(R.id.btnAIVLXD);
+        btnAIVLXD.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, AIvlxdActivity.class);
+            intent.putExtra("userId", userId);
+            startActivity(intent);
+        });
     }
 
     private void performSearch() {

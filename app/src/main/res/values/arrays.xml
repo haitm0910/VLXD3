@@ -7,4 +7,22 @@
         <item>Đã giao</item>
         <item>Đã hủy</item>
     </string-array>
+    <string-array name="style_array">
+        <item>Cổ điển</item>
+        <item>Hiện đại</item>
+        <item>Tối giản</item>
+        <item>Vintage</item>
+        <item>Luxury</item>
+        <item>Khác</item>
+    </string-array>
+    <string-array name="purpose_array">
+        <item>Xây nhà cấp 4</item>
+        <item>Nhà 1 lầu</item>
+        <item>Nhà 2 lầu</item>
+        <item>Nhà gác lửng</item>
+        <item>Sân trước</item>
+        <item>Sân sau</item>
+        <item>Hàng rào</item>
+        <item>Sửa nhà</item>
+    </string-array>
 </resources>

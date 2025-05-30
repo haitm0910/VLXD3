@@ -32,7 +32,7 @@ public class ActivityGachOpLat extends AppCompatActivity {
 
         listViewProducts = findViewById(R.id.listViewProducts);
         textViewProductTitle = findViewById(R.id.textViewProductTitle); // Ánh xạ TextView tiêu đề
-        ImageView backButton = findViewById(R.id.iv_back_arrow_product_list); // Ánh xạ ImageView của nút back
+        ImageView backButton = findViewById(R.id.backButtonGachOpLat); // Ánh xạ ImageView của nút back
         if (backButton != null) { // Kiểm tra để tránh NullPointerException nếu nút không tìm thấy
             backButton.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -75,10 +75,5 @@ public class ActivityGachOpLat extends AppCompatActivity {
         adapter = new ProductAdapter(this, productList, userId);
         listViewProducts.setAdapter(adapter);
 
-        // TODO: Thêm nút back cho ActivityGachOpLat nếu bạn muốn
-        // ImageView backButton = findViewById(R.id.backButtonGachOpLat); // ID cho nút back
-        // if (backButton != null) {
-        //     backButton.setOnClickListener(v -> finish());
-        // }
     }
 }
