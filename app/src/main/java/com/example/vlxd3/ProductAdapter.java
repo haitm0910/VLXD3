@@ -52,7 +52,7 @@ public class ProductAdapter extends BaseAdapter {
         ImageView itemImage = convertView.findViewById(R.id.product_image);
         Product product = productList.get(position);
         itemName.setText(product.getName());
-        itemPrice.setText(product.getPrice() + " đ");
+        itemPrice.setText(product.getPrice() + " đ / " + product.getUnit());
         if (product.getImage() != null && !product.getImage().isEmpty()) {
             if (product.getImage().startsWith("content://") || product.getImage().startsWith("file://")) {
                 itemImage.setImageURI(android.net.Uri.parse(product.getImage()));
