@@ -203,6 +203,15 @@ public class ActivityCheckOut extends AppCompatActivity {
         long orderId = orderDAO.createOrder(newOrder, cartItems);
 
         if (orderId != -1) {
+            if (paymentMethod.equals("Chuyển khoản ngân hàng")) {
+                // Nếu là chuyển khoản, chuyển sang ActivityBankTransfer
+                Intent bankIntent = new Intent(ActivityCheckOut.this, ActivityBankTransfer.class);
+                bankIntent.putExtra("amount", finalTotalAmount);
+                bankIntent.putExtra("orderId", orderId);
+                startActivity(bankIntent);
+                finish();
+                return;
+            }
             Toast.makeText(this, "Đặt hàng thành công! Mã đơn hàng của bạn: " + orderId, Toast.LENGTH_LONG).show();
             cartDAO.clearCart(userId);
             Intent intent = new Intent(ActivityCheckOut.this, MainActivity.class);

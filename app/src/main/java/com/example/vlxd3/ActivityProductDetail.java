@@ -74,6 +74,7 @@ public class ActivityProductDetail extends AppCompatActivity {
         addToCartButton = findViewById(R.id.add_to_cart_button);
         productImagePager = findViewById(R.id.product_image_pager); // Ánh xạ ViewPager
         imageIndicatorLayout = findViewById(R.id.image_indicator_layout); // Ánh xạ indicator layout
+        TextView productUnit = findViewById(R.id.product_unit); // Thêm dòng này để ánh xạ TextView đơn vị
 
         // Hiển thị thông tin sản phẩm
         if (product != null) {
@@ -143,6 +144,9 @@ public class ActivityProductDetail extends AppCompatActivity {
 
             productStock.setText("Số lượng còn lại: " + product.getStock());
             productDescription.setText(product.getDescription());
+            if (productUnit != null) {
+                productUnit.setText(product.getUnit());
+            }
             if (product.getStock() > 0) {
                 productAvailability.setText("Tình trạng: Còn hàng");
             } else {

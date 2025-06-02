@@ -100,10 +100,8 @@ public class AdminProductDetailActivity extends AppCompatActivity {
             productDescriptionEt.setText(product.getDescription());
             // productImageEt.setText(product.getImage());
             // updateImagePreview(product.getImage()); // Cập nhật preview ảnh
-
             // Đảm bảo categoryId được đặt đúng nếu chuyển đổi danh mục
             categoryId = product.getCategoryId();
-
             // Khi load sản phẩm, nếu product.getImage() != null thì kiểm tra là URI hay tên drawable:
             if (product.getImage() != null && !product.getImage().isEmpty()) {
                 if (product.getImage().startsWith("content://") || product.getImage().startsWith("file://")) {
@@ -120,6 +118,7 @@ public class AdminProductDetailActivity extends AppCompatActivity {
             } else {
                 productImagePreview.setImageResource(R.drawable.logo);
             }
+            // TODO: Hiển thị đơn vị sản phẩm nếu có EditText hoặc Spinner cho đơn vị
         } else {
             Toast.makeText(this, "Không tìm thấy sản phẩm để chỉnh sửa.", Toast.LENGTH_SHORT).show();
             finish();
@@ -132,6 +131,7 @@ public class AdminProductDetailActivity extends AppCompatActivity {
         String stockStr = productStockEt.getText().toString().trim();
         String description = productDescriptionEt.getText().toString().trim();
         String image = (selectedImageUri != null) ? selectedImageUri.toString() : null; // Lưu URI ảnh vào DB
+        String unit = ""; // TODO: Lấy đơn vị từ EditText hoặc Spinner nếu có
 
         if (name.isEmpty() || priceStr.isEmpty() || stockStr.isEmpty() || description.isEmpty()) {
             Toast.makeText(this, "Vui lòng nhập đầy đủ thông tin sản phẩm!", Toast.LENGTH_SHORT).show();
@@ -152,11 +152,11 @@ public class AdminProductDetailActivity extends AppCompatActivity {
         boolean success;
 
         if (isAddingNew) {
-            productToSave = new Product(name, categoryId, price, image, description, stock);
+            productToSave = new Product(name, categoryId, price, image, description, stock, unit);
             long id = productDAO.addProduct(productToSave);
             success = (id != -1);
         } else {
-            productToSave = new Product(productId, name, categoryId, price, image, description, stock);
+            productToSave = new Product(productId, name, categoryId, price, image, description, stock, unit);
             success = productDAO.updateProduct(productToSave);
         }
 

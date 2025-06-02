@@ -37,6 +37,7 @@ public class ProductDAO {
             values.put("image", product.getImage());
             values.put("description", product.getDescription());
             values.put("stock", product.getStock());
+            values.put("unit", product.getUnit());
             long id = db.insert("products", null, values);
             Log.d(TAG, "Added product: " + product.getName() + " with ID: " + id);
             return id;
@@ -64,7 +65,8 @@ public class ProductDAO {
                             cursor.getDouble(cursor.getColumnIndexOrThrow("price")),
                             cursor.getString(cursor.getColumnIndexOrThrow("image")),
                             cursor.getString(cursor.getColumnIndexOrThrow("description")),
-                            cursor.getInt(cursor.getColumnIndexOrThrow("stock"))
+                            cursor.getInt(cursor.getColumnIndexOrThrow("stock")),
+                            cursor.getString(cursor.getColumnIndexOrThrow("unit"))
                     );
                     list.add(product);
                 } while (cursor.moveToNext());
@@ -93,7 +95,8 @@ public class ProductDAO {
                         cursor.getDouble(cursor.getColumnIndexOrThrow("price")),
                         cursor.getString(cursor.getColumnIndexOrThrow("image")),
                         cursor.getString(cursor.getColumnIndexOrThrow("description")),
-                        cursor.getInt(cursor.getColumnIndexOrThrow("stock"))
+                        cursor.getInt(cursor.getColumnIndexOrThrow("stock")),
+                        cursor.getString(cursor.getColumnIndexOrThrow("unit"))
                 );
             }
         } catch (Exception e) {
@@ -118,7 +121,8 @@ public class ProductDAO {
                         cursor.getDouble(cursor.getColumnIndexOrThrow("price")),
                         cursor.getString(cursor.getColumnIndexOrThrow("image")),
                         cursor.getString(cursor.getColumnIndexOrThrow("description")),
-                        cursor.getInt(cursor.getColumnIndexOrThrow("stock"))
+                        cursor.getInt(cursor.getColumnIndexOrThrow("stock")),
+                        cursor.getString(cursor.getColumnIndexOrThrow("unit"))
                 );
             }
         } catch (Exception e) {
@@ -200,6 +204,7 @@ public class ProductDAO {
             values.put("image", product.getImage());
             values.put("description", product.getDescription());
             values.put("stock", product.getStock());
+            values.put("unit", product.getUnit());
             rowsAffected = db.update("products", values, "id=?", new String[]{String.valueOf(product.getId())});
             Log.d(TAG, "Updated product ID " + product.getId() + ". Rows affected: " + rowsAffected);
         } catch (Exception e) {
@@ -226,7 +231,8 @@ public class ProductDAO {
                             cursor.getDouble(cursor.getColumnIndexOrThrow("price")),
                             cursor.getString(cursor.getColumnIndexOrThrow("image")),
                             cursor.getString(cursor.getColumnIndexOrThrow("description")),
-                            cursor.getInt(cursor.getColumnIndexOrThrow("stock"))
+                            cursor.getInt(cursor.getColumnIndexOrThrow("stock")),
+                            cursor.getString(cursor.getColumnIndexOrThrow("unit"))
                     );
                     list.add(product);
                 } while (cursor.moveToNext());
@@ -258,7 +264,8 @@ public class ProductDAO {
                             cursor.getDouble(cursor.getColumnIndexOrThrow("price")),
                             cursor.getString(cursor.getColumnIndexOrThrow("image")),
                             cursor.getString(cursor.getColumnIndexOrThrow("description")),
-                            cursor.getInt(cursor.getColumnIndexOrThrow("stock"))
+                            cursor.getInt(cursor.getColumnIndexOrThrow("stock")),
+                            cursor.getString(cursor.getColumnIndexOrThrow("unit"))
                     );
                     list.add(product);
                 } while (cursor.moveToNext());

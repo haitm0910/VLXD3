@@ -84,7 +84,7 @@ public class AIvlxdActivity extends AppCompatActivity {
                 List<Product> allProducts = productDAO.getAllProducts();
                 StringBuilder productListStr = new StringBuilder();
                 for (Product p : allProducts) {
-                    productListStr.append("- ").append(p.getName()).append("\n");
+                    productListStr.append("- ").append(p.getName()).append(" (" + p.getUnit() + ")\n");
                 }
                 String prompt = "Tôi có " + cost + " VNĐ, diện tích " + area + " m2, mục đích: " + purpose + ", phong cách: " + style + ". Dưới đây là danh sách sản phẩm vật liệu xây dựng trong kho: \n" + productListStr + "\nHãy chọn ra các sản phẩm phù hợp nhất từ danh sách trên (chỉ trả về tên sản phẩm, phân tách bằng dấu phẩy, không giải thích).";
                 new GeminiSuggestTask().execute(prompt);
