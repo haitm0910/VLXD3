@@ -165,7 +165,7 @@
             android:layout_marginBottom="16dp">
             <TextView
                 android:id="@+id/content_text"
-                android:text="VLXD123456"
+                android:text="VLXD12345"
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
